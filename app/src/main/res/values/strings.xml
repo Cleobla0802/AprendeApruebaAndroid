@@ -1,3 +1,13 @@
 <resources>
-    <string name="app_name">AprendeAprueba</string>
+    <string name="app_name">Mi Aplicación</string>
+
+    <!-- Bottom Navigation Items -->
+    <string name="pruebas">Pruebas</string>
+    <string name="apuntes">Apuntes</string>
+    <string name="resumenes">Resúmenes</string>
+
+    <!-- Content Descriptions -->
+    <string name="desc_pruebas">Navegar a Pruebas</string>
+    <string name="desc_apuntes">Navegar a Apuntes</string>
+    <string name="desc_resumenes">Navegar a Resúmenes</string>
 </resources>
