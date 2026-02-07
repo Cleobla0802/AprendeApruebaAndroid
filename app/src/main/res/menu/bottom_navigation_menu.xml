@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/pruebasFragment"
+        android:icon="@drawable/iconopruebas"
+        android:title="Pruebas" />
+    <item
+        android:id="@+id/apuntesFragment"
+        android:icon="@drawable/iconoapuntes"
+        android:title="Apuntes" />
+    <item
+        android:id="@+id/resumenesFragment"
+        android:icon="@drawable/iconoresumenes"
+        android:title="Resúmenes" />
+</menu>
+    

@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "210746317476",
+    "firebase_url": "https://aprendeaprueba-667c6-default-rtdb.firebaseio.com",
+    "project_id": "aprendeaprueba-667c6",
+    "storage_bucket": "aprendeaprueba-667c6.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:210746317476:android:2fd6db0473142578dba431",
+        "android_client_info": {
+          "package_name": "es.iescarrillo.aprendeaprueba"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "210746317476-j3vlb6ni1ue9j2459dgeu2akb5joie5n.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA9BfCkJcKD41hXI20efL2QksVx3sjyHUw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "210746317476-j3vlb6ni1ue9j2459dgeu2akb5joie5n.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
