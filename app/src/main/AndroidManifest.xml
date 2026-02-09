@@ -21,9 +21,16 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".activities.LoginActivity" />
+            android:name=".activities.LoginActivity"
+            />
         <activity
-            android:name=".activities.RegisterActivity" />
+            android:name=".activities.RegisterActivity"
+            />
+        <activity
+            android:name=".activities.HomeActivity"
+            />
+        <activity android:name=".activities.CrearEditarApunteActivity" />
+
     </application>
 
 </manifest>
