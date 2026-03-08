@@ -1,6 +1,9 @@
 <resources>
     <string name="app_name">Mi Aplicación</string>
 
+    <string name="navigation_drawer_open">Abrir menú</string>
+    <string name="navigation_drawer_close">Cerrar menú</string>
+
     <!-- Bottom Navigation Items -->
     <string name="pruebas">Pruebas</string>
     <string name="apuntes">Apuntes</string>
