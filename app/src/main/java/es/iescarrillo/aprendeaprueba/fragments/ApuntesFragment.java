@@ -33,10 +33,8 @@ public class ApuntesFragment extends Fragment {
 
     private RecyclerView recyclerApuntes;
     private Button btnCrearApunte;
-
     private ApuntesAdapter adapter;
     private List<Apuntes> listaApuntes;
-
     private DatabaseReference databaseReference;
     private String userId;
 
@@ -58,14 +56,16 @@ public class ApuntesFragment extends Fragment {
         recyclerApuntes.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerApuntes.setAdapter(adapter);
 
-        userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
-        databaseReference = FirebaseDatabase.getInstance().getReference("Apuntes").child(userId);
+        if (FirebaseAuth.getInstance().getCurrentUser() != null) {
+            userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+            databaseReference = FirebaseDatabase.getInstance().getReference("Apuntes").child(userId);
+            cargarApuntes();
+        }
 
         btnCrearApunte.setOnClickListener(v -> {
-            startActivity(new Intent(getContext(), CrearEditarApunteActivity.class));
+            Intent intent = new Intent(getContext(), CrearEditarApunteActivity.class);
+            startActivity(intent);
         });
-
-        cargarApuntes();
     }
 
     private void cargarApuntes() {
@@ -75,14 +75,18 @@ public class ApuntesFragment extends Fragment {
                 listaApuntes.clear();
                 for (DataSnapshot ds : snapshot.getChildren()) {
                     Apuntes apunte = ds.getValue(Apuntes.class);
-                    if (apunte != null) listaApuntes.add(apunte);
+                    if (apunte != null) {
+                        listaApuntes.add(apunte);
+                    }
                 }
                 adapter.notifyDataSetChanged();
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                Toast.makeText(getContext(), "Error al cargar apuntes", Toast.LENGTH_SHORT).show();
+                if (isAdded()) {
+                    Toast.makeText(getContext(), "Error al conectar con Firebase", Toast.LENGTH_SHORT).show();
+                }
             }
         });
     }
