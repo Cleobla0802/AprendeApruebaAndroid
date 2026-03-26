@@ -22,10 +22,21 @@ import androidx.fragment.app.Fragment;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.textfield.TextInputEditText;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 
 import es.iescarrillo.aprendeaprueba.R;
+import es.iescarrillo.aprendeaprueba.api.RetrofitClient;
+import es.iescarrillo.aprendeaprueba.models.Apuntes;
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class CrearApunteFragment extends Fragment {
 
@@ -35,8 +46,11 @@ public class CrearApunteFragment extends Fragment {
     private ImageView ivPreview;
     private Button btnLimpiar, btnGuardar;
     private Uri imagenUri;
+    private long apunteId = -1;
 
-    // Lanzador para la galería
+    // Configura tu API KEY de ImgBB aquí
+    private final String IMGBB_API_KEY = "TU_API_KEY_AQUI";
+
     private final ActivityResultLauncher<String> galleryLauncher = registerForActivityResult(
             new ActivityResultContracts.GetContent(),
             uri -> {
@@ -53,77 +67,104 @@ public class CrearApunteFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View root = inflater.inflate(R.layout.fragment_crear_apunte, container, false);
-
         initViews(root);
         setupSpinners();
 
         btnSeleccionarImagen.setOnClickListener(v -> galleryLauncher.launch("image/*"));
-
         btnLimpiar.setOnClickListener(v -> limpiarFormulario());
-
-        btnGuardar.setOnClickListener(v -> {
-            if (validarFormulario()) {
-                Toast.makeText(getContext(), "Digitalizando con IA...", Toast.LENGTH_SHORT).show();
-                // Aquí irá la llamada a Retrofit más adelante
-            } else {
-                Toast.makeText(getContext(), "Faltan datos obligatorios", Toast.LENGTH_SHORT).show();
-            }
-        });
+        btnGuardar.setOnClickListener(v -> iniciarProcesoGuardado());
 
         return root;
     }
 
-    private void initViews(View v) {
-        etTitulo = v.findViewById(R.id.etTitulo);
-        spinnerCategoria = v.findViewById(R.id.spinnerCategoria);
-        spinnerDificultad = v.findViewById(R.id.spinnerDificultad);
-        btnSeleccionarImagen = v.findViewById(R.id.btnSeleccionarImagen);
-        ivPreview = v.findViewById(R.id.ivPreview);
-        btnLimpiar = v.findViewById(R.id.btnLimpiar);
-        btnGuardar = v.findViewById(R.id.btnGuardar);
-    }
-
-    private void setupSpinners() {
-        List<String> categorias = Arrays.asList("Selecciona categoría", "Matemáticas", "Historia", "Lengua", "Ciencias", "Otros");
-        configurarSpinner(spinnerCategoria, categorias);
-
-        List<String> dificultades = Arrays.asList("Selecciona dificultad", "Básico", "Intermedio", "Avanzado");
-        configurarSpinner(spinnerDificultad, dificultades);
-    }
-
-    private void configurarSpinner(Spinner spinner, List<String> items) {
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(requireContext(), android.R.layout.simple_spinner_item, items) {
-            @Override
-            public View getView(int position, View convertView, ViewGroup parent) {
-                TextView tv = (TextView) super.getView(position, convertView, parent);
-                tv.setTextColor(Color.WHITE); // Texto blanco cuando está cerrado
-                return tv;
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        if (getArguments() != null) {
+            apunteId = getArguments().getLong("apunteId", -1);
+            if (apunteId != -1) {
+                etTitulo.setText(getArguments().getString("titulo"));
+                btnGuardar.setText("Actualizar Apunte");
             }
+        }
+    }
+
+    private void iniciarProcesoGuardado() {
+        if (!validarFormulario()) {
+            Toast.makeText(getContext(), "Rellena los campos", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Si hay una imagen nueva, la subimos a ImgBB primero
+        if (imagenUri != null) {
+            subirAImgBB();
+        } else {
+            // Si no hay imagen nueva (estamos editando), guardamos directamente
+            guardarEnSpringBoot(null);
+        }
+    }
+
+    private void subirAImgBB() {
+        try {
+            // Convertir URI a File para poder enviarlo
+            File file = new File(requireContext().getCacheDir(), "temp_image.jpg");
+            InputStream is = requireContext().getContentResolver().openInputStream(imagenUri);
+            FileOutputStream os = new FileOutputStream(file);
+            byte[] buffer = new byte[1024];
+            int length;
+            while ((length = is.read(buffer)) > 0) os.write(buffer, 0, length);
+            os.close();
+            is.close();
+
+            RequestBody requestFile = RequestBody.create(MediaType.parse("image/*"), file);
+            MultipartBody.Part body = MultipartBody.Part.createFormData("image", file.getName(), requestFile);
+
+            // Usamos el servicio de ImgBB (tendrás que definirlo en tu RetrofitClient)
+            RetrofitClient.getImgBBService().uploadImage(IMGBB_API_KEY, body).enqueue(new Callback<ImgBBResponse>() {
+                @Override
+                public void onResponse(Call<ImgBBResponse> call, Response<ImgBBResponse> response) {
+                    if (response.isSuccessful() && response.body() != null) {
+                        String urlFinal = response.body().data.url;
+                        guardarEnSpringBoot(urlFinal);
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<ImgBBResponse> call, Throwable t) {
+                    Toast.makeText(getContext(), "Fallo al subir imagen", Toast.LENGTH_SHORT).show();
+                }
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void guardarEnSpringBoot(String urlImagen) {
+        Apuntes apunte = new Apuntes();
+        apunte.setTitulo(etTitulo.getText().toString());
+        apunte.setCategoria(spinnerCategoria.getSelectedItem().toString());
+        if (urlImagen != null) apunte.setImagenUrl(urlImagen); // O el nombre que tengas en el modelo
+
+        // Llamada a tu API de Spring Boot
+        Call<Apuntes> call = (apunteId == -1)
+                ? RetrofitClient.getApunteService().crearApunte(apunte)
+                : RetrofitClient.getApunteService().actualizarApunte(apunteId, apunte);
+
+        call.enqueue(new Callback<Apuntes>() {
             @Override
-            public View getDropDownView(int position, View convertView, ViewGroup parent) {
-                TextView tv = (TextView) super.getDropDownView(position, convertView, parent);
-                tv.setTextColor(Color.WHITE); // Texto blanco en la lista
-                tv.setBackgroundColor(Color.parseColor("#1C1B1F")); // Fondo oscuro en la lista
-                return tv;
+            public void onResponse(Call<Apuntes> call, Response<Apuntes> response) {
+                if (response.isSuccessful()) {
+                    Toast.makeText(getContext(), "Guardado correctamente", Toast.LENGTH_SHORT).show();
+                    getParentFragmentManager().popBackStack();
+                }
             }
-        };
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinner.setAdapter(adapter);
+
+            @Override
+            public void onFailure(Call<Apuntes> call, Throwable t) {
+                Toast.makeText(getContext(), "Error al conectar con la API", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
-    private boolean validarFormulario() {
-        return !etTitulo.getText().toString().trim().isEmpty()
-                && spinnerCategoria.getSelectedItemPosition() > 0
-                && imagenUri != null;
-    }
-
-    private void limpiarFormulario() {
-        etTitulo.setText("");
-        spinnerCategoria.setSelection(0);
-        spinnerDificultad.setSelection(0);
-        imagenUri = null;
-        ivPreview.setImageResource(android.R.drawable.ic_menu_gallery);
-        ivPreview.setImageTintList(android.content.res.ColorStateList.valueOf(Color.parseColor("#55FFFFFF")));
-        ivPreview.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
-    }
+    // ... (Mantén aquí tus métodos initViews, setupSpinners y configurarSpinner del código anterior)
 }
