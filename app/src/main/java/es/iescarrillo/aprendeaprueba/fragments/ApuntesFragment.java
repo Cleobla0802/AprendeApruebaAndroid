@@ -1,7 +1,7 @@
 package es.iescarrillo.aprendeaprueba.fragments;
 
-import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,74 +15,92 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.auth.FirebaseUser;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import es.iescarrillo.aprendeaprueba.R;
-import es.iescarrillo.aprendeaprueba.activities.CrearEditarApunteActivity;
 import es.iescarrillo.aprendeaprueba.adapters.ApuntesAdapter;
+import es.iescarrillo.aprendeaprueba.api.RetrofitClient;
 import es.iescarrillo.aprendeaprueba.models.Apuntes;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class ApuntesFragment extends Fragment {
 
-    private RecyclerView recyclerApuntes;
     private Button btnCrearApunte;
-
+    private RecyclerView recyclerApuntes;
     private ApuntesAdapter adapter;
-    private List<Apuntes> listaApuntes;
+    private List<Apuntes> listaApuntes = new ArrayList<>();
 
-    private DatabaseReference databaseReference;
-    private String userId;
+    // Instancia de Firebase Auth
+    private FirebaseAuth mAuth;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragments_apuntes, container, false);
-    }
+        View root = inflater.inflate(R.layout.fragment_apuntes, container, false);
 
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
+        mAuth = FirebaseAuth.getInstance();
+        btnCrearApunte = root.findViewById(R.id.btnCrearApunte);
+        recyclerApuntes = root.findViewById(R.id.recyclerApuntes);
 
-        recyclerApuntes = view.findViewById(R.id.recyclerApuntes);
-        btnCrearApunte = view.findViewById(R.id.btnCrearApunte);
-
-        listaApuntes = new ArrayList<>();
-        adapter = new ApuntesAdapter(getContext(), listaApuntes);
+        // Configuración del RecyclerView
         recyclerApuntes.setLayoutManager(new LinearLayoutManager(getContext()));
+        adapter = new ApuntesAdapter(getContext(), listaApuntes);
         recyclerApuntes.setAdapter(adapter);
 
-        userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
-        databaseReference = FirebaseDatabase.getInstance().getReference("Apuntes").child(userId);
+        // OBTENER USUARIO ACTUAL Y CARGAR DATOS
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if (currentUser != null) {
+            String uid = currentUser.getUid();
+            Log.d("FIREBASE_AUTH", "Cargando apuntes para el UID: " + uid);
+            cargarApuntesDesdeRailway(uid);
+        } else {
+            Toast.makeText(getContext(), "Usuario no identificado", Toast.LENGTH_SHORT).show();
+            // Aquí podrías redirigir al LoginActivity si quisieras
+        }
 
         btnCrearApunte.setOnClickListener(v -> {
-            startActivity(new Intent(getContext(), CrearEditarApunteActivity.class));
+            getParentFragmentManager().beginTransaction()
+                    .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out, android.R.anim.fade_in, android.R.anim.fade_out)
+                    .replace(R.id.fragment_container, new CrearApunteFragment())
+                    .addToBackStack(null)
+                    .commit();
         });
 
-        cargarApuntes();
+        return root;
     }
 
-    private void cargarApuntes() {
-        databaseReference.addValueEventListener(new ValueEventListener() {
+    private void cargarApuntesDesdeRailway(String uid) {
+        RetrofitClient.getApunteService().getApuntesByUser(uid).enqueue(new Callback<List<Apuntes>>() {
             @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                listaApuntes.clear();
-                for (DataSnapshot ds : snapshot.getChildren()) {
-                    Apuntes apunte = ds.getValue(Apuntes.class);
-                    if (apunte != null) listaApuntes.add(apunte);
+            public void onResponse(Call<List<Apuntes>> call, Response<List<Apuntes>> response) {
+                // 1. PRIMERO: Comprobamos si el fragmento sigue activo para evitar el crash
+                if (!isAdded() || getContext() == null) {
+                    return;
                 }
-                adapter.notifyDataSetChanged();
-            }
 
+                if (response.isSuccessful() && response.body() != null) {
+                    listaApuntes.clear();
+                    listaApuntes.addAll(response.body());
+                    adapter.notifyDataSetChanged();
+
+                    if (listaApuntes.isEmpty()) {
+                        Toast.makeText(getContext(), "No tienes apuntes todavía", Toast.LENGTH_SHORT).show();
+                    }
+                } else {
+                    // Aquí es donde probablemente estaba saltando el Toast antes del crash
+                    Log.e("API_ERROR", "Código: " + response.code());
+                    Toast.makeText(getContext(), "Error del servidor: " + response.code(), Toast.LENGTH_SHORT).show();
+                }
+            }
             @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                Toast.makeText(getContext(), "Error al cargar apuntes", Toast.LENGTH_SHORT).show();
+            public void onFailure(Call<List<Apuntes>> call, Throwable t) {
+                Log.e("API_FAILURE", t.getMessage());
+                Toast.makeText(getContext(), "Error de red", Toast.LENGTH_SHORT).show();
             }
         });
     }

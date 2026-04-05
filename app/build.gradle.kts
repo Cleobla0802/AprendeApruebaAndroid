@@ -39,6 +39,12 @@ android {
 
 dependencies {
 
+    // Retrofit: La librería principal
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    // Converter Gson: Para que Retrofit entienda JSON
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    // OkHttp: Para manejar las peticiones y archivos (Multipart)
+    implementation("com.squareup.okhttp3:okhttp:4.10.0")
     implementation(libs.appcompat)
     implementation(libs.material)
     implementation(libs.activity)

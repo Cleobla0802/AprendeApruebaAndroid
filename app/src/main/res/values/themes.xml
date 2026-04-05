@@ -1,9 +1,18 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
-    <style name="Base.Theme.AprendeAprueba" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+
+    <style name="Theme.AprendeAprueba" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorPrimary">#A020F0</item>
+        <item name="colorPrimaryVariant">#7B1FA2</item>
+        <item name="colorOnPrimary">@android:color/white</item>
     </style>
 
-    <style name="Theme.AprendeAprueba" parent="Base.Theme.AprendeAprueba" />
+    <style name="SpinnerCustomStyle" parent="Widget.AppCompat.Spinner">
+        <item name="android:backgroundTint">@android:color/white</item>
+    </style>
+
+    <style name="SpinnerPopupStyle" parent="Widget.AppCompat.Light.PopupMenu">
+        <item name="android:background">#1C1B1F</item>
+        <item name="android:textColor">@android:color/white</item>
+    </style>
+
 </resources>
