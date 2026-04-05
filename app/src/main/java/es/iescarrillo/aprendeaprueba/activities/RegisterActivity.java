@@ -2,21 +2,23 @@ package es.iescarrillo.aprendeaprueba.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.annotation.Nullable;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.credentials.Credential;
+import androidx.credentials.CredentialManager;
+import androidx.credentials.CustomCredential;
+import androidx.credentials.GetCredentialRequest;
+import androidx.credentials.GetCredentialResponse;
+import androidx.credentials.exceptions.GetCredentialException;
 
-import com.google.android.gms.auth.api.signin.GoogleSignIn;
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
-import com.google.android.gms.auth.api.signin.GoogleSignInClient;
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
-import com.google.android.gms.common.api.ApiException;
-import com.google.android.gms.tasks.Task;
-import com.google.android.material.textfield.TextInputEditText;
-import com.google.android.material.textfield.TextInputLayout;
+import com.google.android.libraries.identity.googleid.GetGoogleIdOption;
+import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -26,15 +28,12 @@ import es.iescarrillo.aprendeaprueba.R;
 
 public class RegisterActivity extends AppCompatActivity {
 
-    private TextInputEditText etUsername, etEmail, etPassword, etConfirmPassword;
-    private TextInputLayout tilUsername, tilEmail, tilPassword, tilConfirmPassword;
-
+    private static final String TAG = "REGISTER_GOOGLE";
+    private EditText etEmail, etPassword;
     private Button btnRegister, btnGoogle;
     private TextView tvLogin;
-
     private FirebaseAuth mAuth;
-    private GoogleSignInClient googleSignInClient;
-    private static final int REQ_CODE_GOOGLE_SIGN_IN = 100;
+    private CredentialManager credentialManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,103 +41,72 @@ public class RegisterActivity extends AppCompatActivity {
         setContentView(R.layout.activity_register);
 
         mAuth = FirebaseAuth.getInstance();
+        credentialManager = CredentialManager.create(this);
 
-        tilUsername = findViewById(R.id.tilUsername);
-        tilEmail = findViewById(R.id.tilEmail);
-        tilPassword = findViewById(R.id.tilPassword);
-        tilConfirmPassword = findViewById(R.id.tilConfirmPassword);
-
-        etUsername = findViewById(R.id.etUsername);
-        etEmail = findViewById(R.id.etEmail);
+        etEmail = findViewById(R.id.etEmail); // Asegúrate de que los IDs coincidan con tu XML
         etPassword = findViewById(R.id.etPassword);
-        etConfirmPassword = findViewById(R.id.etConfirmPassword);
-
         btnRegister = findViewById(R.id.btnRegister);
         btnGoogle = findViewById(R.id.btnGoogle);
         tvLogin = findViewById(R.id.tvLogin);
 
-        btnRegister.setOnClickListener(v -> registerUser());
-
-        tvLogin.setOnClickListener(v -> {
-            startActivity(new Intent(RegisterActivity.this, LoginActivity.class));
-            finish();
-        });
-
-        // Configuración de Google Sign-In
-        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken(getString(R.string.default_web_client_id))
-                .requestEmail()
-                .build();
-        googleSignInClient = GoogleSignIn.getClient(this, gso);
-
-        // Botón de registro con Google
-        btnGoogle.setOnClickListener(v -> {
-            Intent signInIntent = googleSignInClient.getSignInIntent();
-            startActivityForResult(signInIntent, REQ_CODE_GOOGLE_SIGN_IN);
-        });
+        btnRegister.setOnClickListener(v -> registerWithEmail());
+        btnGoogle.setOnClickListener(v -> loginWithGoogle());
+        tvLogin.setOnClickListener(v -> finish()); // Vuelve al login
     }
 
-    private void registerUser() {
-
-        String username = etUsername.getText().toString().trim();
+    private void registerWithEmail() {
         String email = etEmail.getText().toString().trim();
-        String password = etPassword.getText().toString().trim();
-        String confirmPassword = etConfirmPassword.getText().toString().trim();
+        String pass = etPassword.getText().toString().trim();
 
-        tilUsername.setError(null);
-        tilEmail.setError(null);
-        tilPassword.setError(null);
-        tilConfirmPassword.setError(null);
-
-        if (username.isEmpty()) {
-            tilUsername.setError("Introduce un nombre de usuario");
+        if (email.isEmpty() || pass.isEmpty()) {
+            Toast.makeText(this, "Rellena todos los campos", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        if (email.isEmpty()) {
-            tilEmail.setError("Introduce el email");
-            return;
-        }
-
-        if (password.isEmpty()) {
-            tilPassword.setError("Introduce la contraseña");
-            return;
-        }
-
-        if (confirmPassword.isEmpty()) {
-            tilConfirmPassword.setError("Confirma la contraseña");
-            return;
-        }
-
-        if (!password.equals(confirmPassword)) {
-            tilConfirmPassword.setError("Las contraseñas no coinciden");
-            return;
-        }
-
-        mAuth.createUserWithEmailAndPassword(email, password)
-                .addOnCompleteListener(task -> {
+        mAuth.createUserWithEmailAndPassword(email, pass)
+                .addOnCompleteListener(this, task -> {
                     if (task.isSuccessful()) {
-                        Toast.makeText(RegisterActivity.this, "Registro exitoso", Toast.LENGTH_SHORT).show();
                         startActivity(new Intent(RegisterActivity.this, HomeActivity.class));
                         finish();
                     } else {
-                        Toast.makeText(RegisterActivity.this, "Error al registrar usuario", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, "Error en el registro: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 });
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
+    private void loginWithGoogle() {
+        GetGoogleIdOption googleIdOption = new GetGoogleIdOption.Builder()
+                .setFilterByAuthorizedAccounts(false)
+                .setServerClientId(getString(R.string.default_web_client_id))
+                .build();
 
-        if (requestCode == REQ_CODE_GOOGLE_SIGN_IN) {
-            Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
+        GetCredentialRequest request = new GetCredentialRequest.Builder()
+                .addCredentialOption(googleIdOption)
+                .build();
+
+        credentialManager.getCredentialAsync(this, request, null, Runnable::run,
+                new androidx.credentials.CredentialManagerCallback<GetCredentialResponse, GetCredentialException>() {
+                    @Override
+                    public void onResult(GetCredentialResponse result) {
+                        handleSignIn(result.getCredential());
+                    }
+
+                    @Override
+                    public void onError(@NonNull GetCredentialException e) {
+                        Log.e(TAG, "Error: " + e.getMessage());
+                    }
+                });
+    }
+
+    private void handleSignIn(Credential credential) {
+        // Aprovechamos Java 21 para usar el 'instanceof' moderno
+        if (credential instanceof CustomCredential customCredential
+                && credential.getType().equals(GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL)) {
             try {
-                GoogleSignInAccount account = task.getResult(ApiException.class);
-                if (account != null) firebaseAuthWithGoogle(account.getIdToken());
-            } catch (ApiException e) {
-                e.printStackTrace();
-                Toast.makeText(this, "Error en Google Sign-In", Toast.LENGTH_SHORT).show();
+                GoogleIdTokenCredential googleIdTokenCredential = GoogleIdTokenCredential.createFrom(customCredential.getData());
+                firebaseAuthWithGoogle(googleIdTokenCredential.getIdToken());
+            } catch (Exception e) {
+                Log.e(TAG, "Error al procesar token", e);
             }
         }
     }
@@ -146,14 +114,12 @@ public class RegisterActivity extends AppCompatActivity {
     private void firebaseAuthWithGoogle(String idToken) {
         AuthCredential credential = GoogleAuthProvider.getCredential(idToken, null);
         mAuth.signInWithCredential(credential)
-                .addOnCompleteListener(task -> {
+                .addOnCompleteListener(this, task -> {
                     if (task.isSuccessful()) {
-                        FirebaseUser user = mAuth.getCurrentUser();
-                        Toast.makeText(this, "Registro/Inicio Google exitoso", Toast.LENGTH_SHORT).show();
                         startActivity(new Intent(RegisterActivity.this, HomeActivity.class));
                         finish();
                     } else {
-                        Toast.makeText(this, "Error autenticando con Google", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, "Error de autenticación", Toast.LENGTH_SHORT).show();
                     }
                 });
     }
