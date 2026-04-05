@@ -78,16 +78,25 @@ public class ApuntesFragment extends Fragment {
         RetrofitClient.getApunteService().getApuntesByUser(uid).enqueue(new Callback<List<Apuntes>>() {
             @Override
             public void onResponse(Call<List<Apuntes>> call, Response<List<Apuntes>> response) {
+                // 1. PRIMERO: Comprobamos si el fragmento sigue activo para evitar el crash
+                if (!isAdded() || getContext() == null) {
+                    return;
+                }
+
                 if (response.isSuccessful() && response.body() != null) {
                     listaApuntes.clear();
                     listaApuntes.addAll(response.body());
                     adapter.notifyDataSetChanged();
+
+                    if (listaApuntes.isEmpty()) {
+                        Toast.makeText(getContext(), "No tienes apuntes todavía", Toast.LENGTH_SHORT).show();
+                    }
                 } else {
-                    Log.e("API_ERROR", "Error: " + response.code());
-                    Toast.makeText(getContext(), "No se han podido cargar tus apuntes", Toast.LENGTH_SHORT).show();
+                    // Aquí es donde probablemente estaba saltando el Toast antes del crash
+                    Log.e("API_ERROR", "Código: " + response.code());
+                    Toast.makeText(getContext(), "Error del servidor: " + response.code(), Toast.LENGTH_SHORT).show();
                 }
             }
-
             @Override
             public void onFailure(Call<List<Apuntes>> call, Throwable t) {
                 Log.e("API_FAILURE", t.getMessage());
