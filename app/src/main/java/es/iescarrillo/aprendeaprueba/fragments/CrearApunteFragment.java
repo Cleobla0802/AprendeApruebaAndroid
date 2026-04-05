@@ -1,8 +1,11 @@
 package es.iescarrillo.aprendeaprueba.fragments;
 
-import android.graphics.Color;
+import android.app.Activity;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,7 +13,6 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Spinner;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -21,16 +23,18 @@ import androidx.fragment.app.Fragment;
 
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.textfield.TextInputEditText;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
-import java.util.Arrays;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 import es.iescarrillo.aprendeaprueba.R;
 import es.iescarrillo.aprendeaprueba.api.RetrofitClient;
-import es.iescarrillo.aprendeaprueba.models.Apuntes;
+import es.iescarrillo.aprendeaprueba.models.ImgBBResponse;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
@@ -46,19 +50,19 @@ public class CrearApunteFragment extends Fragment {
     private ImageView ivPreview;
     private Button btnLimpiar, btnGuardar;
     private Uri imagenUri;
-    private long apunteId = -1;
 
-    // Configura tu API KEY de ImgBB aquí
-    private final String IMGBB_API_KEY = "TU_API_KEY_AQUI";
+    private FirebaseAuth mAuth;
+    private final String apiKeyImgBB = "c7a45042cb4b545d896d5c8730252add";
 
-    private final ActivityResultLauncher<String> galleryLauncher = registerForActivityResult(
-            new ActivityResultContracts.GetContent(),
-            uri -> {
-                if (uri != null) {
-                    imagenUri = uri;
-                    ivPreview.setImageTintList(null);
-                    ivPreview.setScaleType(ImageView.ScaleType.CENTER_CROP);
-                    ivPreview.setImageURI(uri);
+    private final ActivityResultLauncher<Intent> imagePickerLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
+                    imagenUri = result.getData().getData();
+                    if (ivPreview != null) {
+                        ivPreview.setImageURI(imagenUri);
+                        ivPreview.setImageTintList(null);
+                    }
                 }
             }
     );
@@ -67,104 +71,140 @@ public class CrearApunteFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View root = inflater.inflate(R.layout.fragment_crear_apunte, container, false);
-        initViews(root);
-        setupSpinners();
 
-        btnSeleccionarImagen.setOnClickListener(v -> galleryLauncher.launch("image/*"));
+        // Inicializar Firebase Auth
+        mAuth = FirebaseAuth.getInstance();
+
+        // Vincular vistas
+        etTitulo = root.findViewById(R.id.etTitulo);
+        spinnerCategoria = root.findViewById(R.id.spinnerCategoria);
+        spinnerDificultad = root.findViewById(R.id.spinnerDificultad); // ¡Importante!
+        btnSeleccionarImagen = root.findViewById(R.id.btnSeleccionarImagen);
+        ivPreview = root.findViewById(R.id.ivPreview);
+        btnLimpiar = root.findViewById(R.id.btnLimpiar);
+        btnGuardar = root.findViewById(R.id.btnGuardar);
+
+        configurarSpinners();
+
+        btnSeleccionarImagen.setOnClickListener(v -> abrirGaleria());
         btnLimpiar.setOnClickListener(v -> limpiarFormulario());
-        btnGuardar.setOnClickListener(v -> iniciarProcesoGuardado());
+        btnGuardar.setOnClickListener(v -> validarYGuardar());
 
         return root;
     }
 
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        if (getArguments() != null) {
-            apunteId = getArguments().getLong("apunteId", -1);
-            if (apunteId != -1) {
-                etTitulo.setText(getArguments().getString("titulo"));
-                btnGuardar.setText("Actualizar Apunte");
-            }
+    private void configurarSpinners() {
+        String[] categorias = {"Matemáticas", "Historia", "Lengua", "Ciencias", "Otros"};
+        String[] dificultades = {"Fácil", "Intermedio", "Difícil"};
+
+        if (getContext() != null) {
+            // Configurar Categoría
+            ArrayAdapter<String> adapterCat = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_dropdown_item, categorias);
+            spinnerCategoria.setAdapter(adapterCat);
+
+            // Configurar Dificultad (Esto era lo que faltaba)
+            ArrayAdapter<String> adapterDif = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_dropdown_item, dificultades);
+            spinnerDificultad.setAdapter(adapterDif);
         }
     }
 
-    private void iniciarProcesoGuardado() {
-        if (!validarFormulario()) {
-            Toast.makeText(getContext(), "Rellena los campos", Toast.LENGTH_SHORT).show();
+    private void abrirGaleria() {
+        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        imagePickerLauncher.launch(intent);
+    }
+
+    private void validarYGuardar() {
+        String titulo = etTitulo.getText().toString().trim();
+        if (titulo.isEmpty() || imagenUri == null) {
+            Toast.makeText(getContext(), "Añade título e imagen", Toast.LENGTH_SHORT).show();
             return;
         }
-
-        // Si hay una imagen nueva, la subimos a ImgBB primero
-        if (imagenUri != null) {
-            subirAImgBB();
-        } else {
-            // Si no hay imagen nueva (estamos editando), guardamos directamente
-            guardarEnSpringBoot(null);
-        }
+        subirImagenAImgBB();
     }
 
-    private void subirAImgBB() {
+    private void subirImagenAImgBB() {
         try {
-            // Convertir URI a File para poder enviarlo
-            File file = new File(requireContext().getCacheDir(), "temp_image.jpg");
-            InputStream is = requireContext().getContentResolver().openInputStream(imagenUri);
-            FileOutputStream os = new FileOutputStream(file);
+            if (getContext() == null) return;
+
+            File file = new File(getContext().getCacheDir(), "temp_image");
+            InputStream inputStream = getContext().getContentResolver().openInputStream(imagenUri);
+            FileOutputStream outputStream = new FileOutputStream(file);
             byte[] buffer = new byte[1024];
-            int length;
-            while ((length = is.read(buffer)) > 0) os.write(buffer, 0, length);
-            os.close();
-            is.close();
+            int read;
+            while ((read = inputStream.read(buffer)) != -1) {
+                outputStream.write(buffer, 0, read);
+            }
+            outputStream.flush();
+            outputStream.close();
 
             RequestBody requestFile = RequestBody.create(MediaType.parse("image/*"), file);
             MultipartBody.Part body = MultipartBody.Part.createFormData("image", file.getName(), requestFile);
 
-            // Usamos el servicio de ImgBB (tendrás que definirlo en tu RetrofitClient)
-            RetrofitClient.getImgBBService().uploadImage(IMGBB_API_KEY, body).enqueue(new Callback<ImgBBResponse>() {
+            RetrofitClient.getImgBBService().uploadImage(apiKeyImgBB, body).enqueue(new Callback<ImgBBResponse>() {
                 @Override
                 public void onResponse(Call<ImgBBResponse> call, Response<ImgBBResponse> response) {
                     if (response.isSuccessful() && response.body() != null) {
-                        String urlFinal = response.body().data.url;
-                        guardarEnSpringBoot(urlFinal);
+                        guardarEnBackend(response.body().getData().getUrl());
+                    } else {
+                        Toast.makeText(getContext(), "Error en ImgBB", Toast.LENGTH_SHORT).show();
                     }
                 }
 
                 @Override
                 public void onFailure(Call<ImgBBResponse> call, Throwable t) {
-                    Toast.makeText(getContext(), "Fallo al subir imagen", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), "Error de red en imagen", Toast.LENGTH_SHORT).show();
                 }
             });
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e("UPLOAD_ERR", e.getMessage());
         }
     }
 
-    private void guardarEnSpringBoot(String urlImagen) {
-        Apuntes apunte = new Apuntes();
-        apunte.setTitulo(etTitulo.getText().toString());
-        apunte.setCategoria(spinnerCategoria.getSelectedItem().toString());
-        if (urlImagen != null) apunte.setImagenUrl(urlImagen); // O el nombre que tengas en el modelo
+    private void guardarEnBackend(String urlImagen) {
+        FirebaseUser user = mAuth.getCurrentUser();
+        if (user == null) {
+            Toast.makeText(getContext(), "Usuario no autenticado", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
-        // Llamada a tu API de Spring Boot
-        Call<Apuntes> call = (apunteId == -1)
-                ? RetrofitClient.getApunteService().crearApunte(apunte)
-                : RetrofitClient.getApunteService().actualizarApunte(apunteId, apunte);
+        // Crear el mapa de datos para el Body
+        Map<String, String> payload = new HashMap<>();
+        payload.put("url", urlImagen);
+        payload.put("titulo", etTitulo.getText().toString());
+        payload.put("userId", user.getUid()); // Usamos el UID real de Firebase
+        payload.put("categoria", spinnerCategoria.getSelectedItem().toString());
+        payload.put("dificultad", spinnerDificultad.getSelectedItem().toString());
 
-        call.enqueue(new Callback<Apuntes>() {
+        Toast.makeText(getContext(), "Digitalizando con IA...", Toast.LENGTH_SHORT).show();
+
+        RetrofitClient.getApunteService().digitalizarApunte(payload).enqueue(new Callback<Map<String, String>>() {
             @Override
-            public void onResponse(Call<Apuntes> call, Response<Apuntes> response) {
-                if (response.isSuccessful()) {
-                    Toast.makeText(getContext(), "Guardado correctamente", Toast.LENGTH_SHORT).show();
-                    getParentFragmentManager().popBackStack();
+            public void onResponse(Call<Map<String, String>> call, Response<Map<String, String>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    String textoIA = response.body().get("textoIA");
+                    Toast.makeText(getContext(), "¡Éxito! Texto extraído correctamente", Toast.LENGTH_LONG).show();
+                    limpiarFormulario();
+                } else {
+                    Toast.makeText(getContext(), "Error servidor: " + response.code(), Toast.LENGTH_SHORT).show();
+                    Log.e("API_ERROR", "Cuerpo error: " + response.errorBody());
                 }
             }
 
             @Override
-            public void onFailure(Call<Apuntes> call, Throwable t) {
-                Toast.makeText(getContext(), "Error al conectar con la API", Toast.LENGTH_SHORT).show();
+            public void onFailure(Call<Map<String, String>> call, Throwable t) {
+                Log.e("ERROR_CONEXION", t.toString()); // Mira esto en el Logcat de Android Studio
+                Toast.makeText(getContext(), "Error: " + t.getMessage(), Toast.LENGTH_LONG).show();
             }
         });
     }
 
-    // ... (Mantén aquí tus métodos initViews, setupSpinners y configurarSpinner del código anterior)
+    private void limpiarFormulario() {
+        if (etTitulo != null) etTitulo.setText("");
+        imagenUri = null;
+        if (ivPreview != null) {
+            ivPreview.setImageResource(android.R.drawable.ic_menu_gallery);
+        }
+        if (spinnerCategoria != null) spinnerCategoria.setSelection(0);
+        if (spinnerDificultad != null) spinnerDificultad.setSelection(0);
+    }
 }

@@ -1,6 +1,6 @@
 package es.iescarrillo.aprendeaprueba.services;
 
-import es.iescarrillo.aprendeaprueba.api.ImgBBResponse;
+import es.iescarrillo.aprendeaprueba.models.ImgBBResponse;
 import okhttp3.MultipartBody;
 import retrofit2.Call;
 import retrofit2.http.Multipart;

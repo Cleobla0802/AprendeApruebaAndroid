@@ -1,22 +1,21 @@
 package es.iescarrillo.aprendeaprueba.models;
 
+import com.google.gson.annotations.SerializedName;
+
 public class Apuntes {
 
     private String id;
     private String titulo;
     private String descripcion;
     private String contenido;
+
+    @SerializedName("userId")
     private String userId;
 
-    public Apuntes() {
-    }
+    private String categoria;
+    private String imagenUrl;
 
-    public Apuntes(String id, String titulo, String descripcion, String contenido, String userId) {
-        this.id = id;
-        this.titulo = titulo;
-        this.descripcion = descripcion;
-        this.contenido = contenido;
-        this.userId = userId;
+    public Apuntes() {
     }
 
     public Apuntes(String id, String titulo, String descripcion, String contenido) {
@@ -26,45 +25,35 @@ public class Apuntes {
         this.contenido = contenido;
     }
 
+    public Apuntes(String id, String titulo, String descripcion, String contenido, String userId, String categoria, String imagenUrl) {
+        this.id = id;
+        this.titulo = titulo;
+        this.descripcion = descripcion;
+        this.contenido = contenido;
+        this.userId = userId;
+        this.categoria = categoria;
+        this.imagenUrl = imagenUrl;
+    }
 
     // Getters y Setters
-    public String getId() {
-        return id;
-    }
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
 
-    public void setId(String id) {
-        this.id = id;
-    }
+    public String getTitulo() { return titulo; }
+    public void setTitulo(String titulo) { this.titulo = titulo; }
 
-    public String getTitulo() {
-        return titulo;
-    }
+    public String getDescripcion() { return descripcion; }
+    public void setDescripcion(String descripcion) { this.descripcion = descripcion; }
 
-    public void setTitulo(String titulo) {
-        this.titulo = titulo;
-    }
+    public String getContenido() { return contenido; }
+    public void setContenido(String contenido) { this.contenido = contenido; }
 
-    public String getDescripcion() {
-        return descripcion;
-    }
+    public String getUserId() { return userId; }
+    public void setUserId(String userId) { this.userId = userId; }
 
-    public void setDescripcion(String descripcion) {
-        this.descripcion = descripcion;
-    }
+    public String getCategoria() { return categoria; }
+    public void setCategoria(String categoria) { this.categoria = categoria; }
 
-    public String getContenido() {
-        return contenido;
-    }
-
-    public void setContenido(String contenido) {
-        this.contenido = contenido;
-    }
-
-    public String getUserId() {
-        return userId;
-    }
-
-    public void setUserId(String userId) {
-        this.userId = userId;
-    }
+    public String getImagenUrl() { return imagenUrl; }
+    public void setImagenUrl(String imagenUrl) { this.imagenUrl = imagenUrl; }
 }
