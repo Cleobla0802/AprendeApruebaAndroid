@@ -1,6 +1,7 @@
 package es.iescarrillo.aprendeaprueba.adapters;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,7 +14,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.card.MaterialCardView;
 import java.util.List;
 import es.iescarrillo.aprendeaprueba.R;
-import es.iescarrillo.aprendeaprueba.fragments.CrearApunteFragment;
 import es.iescarrillo.aprendeaprueba.fragments.DetalleApunteFragment;
 import es.iescarrillo.aprendeaprueba.models.Apuntes;
 
@@ -21,7 +21,6 @@ public class ApuntesAdapter extends RecyclerView.Adapter<ApuntesAdapter.ViewHold
 
     private Context context;
     private List<Apuntes> listaApuntes;
-    // Definimos la interfaz para el borrado
     private OnDeleteClickListener deleteListener;
 
     public interface OnDeleteClickListener {
@@ -44,21 +43,21 @@ public class ApuntesAdapter extends RecyclerView.Adapter<ApuntesAdapter.ViewHold
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Apuntes apunte = listaApuntes.get(position);
+
+        // Sincronizamos con los campos de Firebase
         holder.tvTitulo.setText(apunte.getTitulo());
-        holder.tvDescripcion.setText(apunte.getDescripcion());
+        holder.tvDescripcion.setText(apunte.getContenido()); // Usamos contenido como descripción
+        holder.tvCategoriaTag.setText(apunte.getCategoria()); // Mostramos la categoría (Historia, etc.)
 
         holder.cardApunte.setOnClickListener(v -> {
             DetalleApunteFragment fragment = new DetalleApunteFragment();
-
             Bundle args = new Bundle();
             args.putString("id", apunte.getId());
             args.putString("titulo", apunte.getTitulo());
             args.putString("contenido", apunte.getContenido());
             args.putString("categoria", apunte.getCategoria());
-
             fragment.setArguments(args);
 
-            // 3. Navegación
             if (context instanceof AppCompatActivity) {
                 ((AppCompatActivity) context).getSupportFragmentManager().beginTransaction()
                         .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out,
@@ -69,7 +68,6 @@ public class ApuntesAdapter extends RecyclerView.Adapter<ApuntesAdapter.ViewHold
             }
         });
 
-        // Clic en el botón borrar
         holder.btnBorrar.setOnClickListener(v -> {
             if (deleteListener != null) {
                 deleteListener.onDelete(apunte, position);
@@ -83,16 +81,17 @@ public class ApuntesAdapter extends RecyclerView.Adapter<ApuntesAdapter.ViewHold
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView tvTitulo, tvDescripcion;
+        TextView tvTitulo, tvDescripcion, tvCategoriaTag;
         MaterialCardView cardApunte;
-        ImageButton btnBorrar; // Añadimos la referencia al botón
+        ImageButton btnBorrar;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             tvTitulo = itemView.findViewById(R.id.tvTitulo);
             tvDescripcion = itemView.findViewById(R.id.tvDescripcion);
+            tvCategoriaTag = itemView.findViewById(R.id.tvCategoriaTag); // Nuevo ID
             cardApunte = itemView.findViewById(R.id.cardApunte);
-            btnBorrar = itemView.findViewById(R.id.btnBorrar); // Buscamos el ID del XML
+            btnBorrar = itemView.findViewById(R.id.btnBorrar);
         }
     }
 }

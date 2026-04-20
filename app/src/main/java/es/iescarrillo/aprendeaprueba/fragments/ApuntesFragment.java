@@ -1,6 +1,6 @@
 package es.iescarrillo.aprendeaprueba.fragments;
 
-import android.app.AlertDialog; // Importante para el diálogo de confirmación
+import android.app.AlertDialog;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -17,6 +17,11 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,6 +41,7 @@ public class ApuntesFragment extends Fragment {
     private ApuntesAdapter adapter;
     private List<Apuntes> listaApuntes = new ArrayList<>();
     private FirebaseAuth mAuth;
+    private DatabaseReference mDatabase;
 
     @Nullable
     @Override
@@ -43,26 +49,24 @@ public class ApuntesFragment extends Fragment {
         View root = inflater.inflate(R.layout.fragment_apuntes, container, false);
 
         mAuth = FirebaseAuth.getInstance();
+        mDatabase = FirebaseDatabase.getInstance().getReference("apuntes");
+
         btnCrearApunte = root.findViewById(R.id.btnCrearApunte);
         recyclerApuntes = root.findViewById(R.id.recyclerApuntes);
-
         recyclerApuntes.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        // --- CAMBIO AQUÍ: Inicializamos el adapter con el listener de borrado ---
         adapter = new ApuntesAdapter(getContext(), listaApuntes, (apunte, position) -> {
-            // Cuando se pulsa el icono de la papelera, llamamos al diálogo de confirmación
             mostrarDialogoConfirmacion(apunte, position);
         });
         recyclerApuntes.setAdapter(adapter);
 
         FirebaseUser currentUser = mAuth.getCurrentUser();
         if (currentUser != null) {
-            cargarApuntesDesdeRailway(currentUser.getUid());
+            escucharCambiosFirebase(currentUser.getUid());
         }
 
         btnCrearApunte.setOnClickListener(v -> {
             getParentFragmentManager().beginTransaction()
-                    .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out, android.R.anim.fade_in, android.R.anim.fade_out)
                     .replace(R.id.fragment_container, new CrearApunteFragment())
                     .addToBackStack(null)
                     .commit();
@@ -71,62 +75,40 @@ public class ApuntesFragment extends Fragment {
         return root;
     }
 
-    // --- NUEVO MÉTODO: Diálogo de confirmación ---
+    private void escucharCambiosFirebase(String uid) {
+        // Query para filtrar por usuario
+        mDatabase.orderByChild("userId").equalTo(uid).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                listaApuntes.clear();
+                for (DataSnapshot ds : snapshot.getChildren()) {
+                    Apuntes apunte = ds.getValue(Apuntes.class);
+                    if (apunte != null) {
+                        apunte.setId(ds.getKey());
+                        listaApuntes.add(apunte);
+                    }
+                }
+                adapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e("Firebase", "Error al leer datos", error.toException());
+            }
+        });
+    }
+
     private void mostrarDialogoConfirmacion(Apuntes apunte, int position) {
         new AlertDialog.Builder(getContext())
                 .setTitle("Eliminar apunte")
-                .setMessage("¿Estás seguro de que quieres borrar '" + apunte.getTitulo() + "'?")
+                .setMessage("¿Borrar '" + apunte.getTitulo() + "'?")
                 .setPositiveButton("Eliminar", (dialog, which) -> {
-                    eliminarApunteDesdeAPI(apunte.getId(), position);
+                    // Eliminamos directamente de Firebase para que sea instantáneo
+                    mDatabase.child(apunte.getId()).removeValue().addOnSuccessListener(aVoid -> {
+                        Toast.makeText(getContext(), "Apunte eliminado", Toast.LENGTH_SHORT).show();
+                    });
                 })
                 .setNegativeButton("Cancelar", null)
                 .show();
-    }
-
-    // --- NUEVO MÉTODO: Llamada a tu Service de Retrofit ---
-    private void eliminarApunteDesdeAPI(String id, int position) {
-        RetrofitClient.getApunteService().eliminarApunte(id).enqueue(new Callback<Void>() {
-            @Override
-            public void onResponse(Call<Void> call, Response<Void> response) {
-                if (!isAdded()) return;
-
-                if (response.isSuccessful()) {
-                    // Eliminamos de la lista local y avisamos al adapter
-                    listaApuntes.remove(position);
-                    adapter.notifyItemRemoved(position);
-                    Toast.makeText(getContext(), "Apunte eliminado", Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(getContext(), "No se pudo eliminar", Toast.LENGTH_SHORT).show();
-                }
-            }
-
-            @Override
-            public void onFailure(Call<Void> call, Throwable t) {
-                if (!isAdded()) return;
-                Toast.makeText(getContext(), "Error de conexión", Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
-
-    private void cargarApuntesDesdeRailway(String uid) {
-        RetrofitClient.getApunteService().getApuntesByUser(uid).enqueue(new Callback<List<Apuntes>>() {
-            @Override
-            public void onResponse(Call<List<Apuntes>> call, Response<List<Apuntes>> response) {
-                if (!isAdded() || getContext() == null) return;
-
-                if (response.isSuccessful() && response.body() != null) {
-                    listaApuntes.clear();
-                    listaApuntes.addAll(response.body());
-                    adapter.notifyDataSetChanged();
-                } else {
-                    Log.e("API_ERROR", "Código: " + response.code());
-                }
-            }
-            @Override
-            public void onFailure(Call<List<Apuntes>> call, Throwable t) {
-                if (!isAdded()) return;
-                Log.e("API_FAILURE", t.getMessage());
-            }
-        });
     }
 }

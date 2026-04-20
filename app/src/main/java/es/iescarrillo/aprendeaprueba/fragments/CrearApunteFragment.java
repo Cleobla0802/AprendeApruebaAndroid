@@ -98,12 +98,17 @@ public class CrearApunteFragment extends Fragment {
         String[] dificultades = {"Fácil", "Intermedio", "Difícil"};
 
         if (getContext() != null) {
-            // Configurar Categoría
-            ArrayAdapter<String> adapterCat = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_dropdown_item, categorias);
+            // Usamos TU nuevo layout: R.layout.spinner_item_blanco
+            ArrayAdapter<String> adapterCat = new ArrayAdapter<>(getContext(),
+                    R.layout.spinner_item_blanco, categorias);
+            // Esto es para que la lista al abrirse también use el texto blanco
+            adapterCat.setDropDownViewResource(R.layout.spinner_item_blanco);
             spinnerCategoria.setAdapter(adapterCat);
 
-            // Configurar Dificultad (Esto era lo que faltaba)
-            ArrayAdapter<String> adapterDif = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_dropdown_item, dificultades);
+            // Lo mismo para Dificultad
+            ArrayAdapter<String> adapterDif = new ArrayAdapter<>(getContext(),
+                    R.layout.spinner_item_blanco, dificultades);
+            adapterDif.setDropDownViewResource(R.layout.spinner_item_blanco);
             spinnerDificultad.setAdapter(adapterDif);
         }
     }
