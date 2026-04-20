@@ -202,11 +202,22 @@
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
     <com.google.android.material.navigation.NavigationView
-        android:id="@+id/navigationView"
+        android:id="@+id/nav_view"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_gravity="start"
+        android:background="#1C1B1F"
         app:headerLayout="@layout/nav_header"
-        app:menu="@menu/nav_menu"/>
+        app:menu="@menu/nav_menu"
+
+        app:itemShapeAppearanceOverlay="@style/ShapeAppearance.App.SmallComponent"
+        app:itemShapeInsetStart="12dp"
+        app:itemShapeInsetEnd="12dp"
+        app:itemIconTint="@color/nav_item_color_state"
+        app:itemTextColor="@color/nav_item_color_state"
+        app:itemRippleColor="#33A020F0"
+        app:itemBackground="@drawable/nav_item_background"
+        app:shapeAppearanceOverlay="@style/ShapeAppearance.App.LargeComponent"
+        app:theme="@style/Widget.App.NavigationView"/>
 
 </androidx.drawerlayout.widget.DrawerLayout>

@@ -1,5 +1,6 @@
 package es.iescarrillo.aprendeaprueba.fragments;
 
+import android.app.AlertDialog; // Importante para el diálogo de confirmación
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -34,8 +35,6 @@ public class ApuntesFragment extends Fragment {
     private RecyclerView recyclerApuntes;
     private ApuntesAdapter adapter;
     private List<Apuntes> listaApuntes = new ArrayList<>();
-
-    // Instancia de Firebase Auth
     private FirebaseAuth mAuth;
 
     @Nullable
@@ -47,20 +46,18 @@ public class ApuntesFragment extends Fragment {
         btnCrearApunte = root.findViewById(R.id.btnCrearApunte);
         recyclerApuntes = root.findViewById(R.id.recyclerApuntes);
 
-        // Configuración del RecyclerView
         recyclerApuntes.setLayoutManager(new LinearLayoutManager(getContext()));
-        adapter = new ApuntesAdapter(getContext(), listaApuntes);
+
+        // --- CAMBIO AQUÍ: Inicializamos el adapter con el listener de borrado ---
+        adapter = new ApuntesAdapter(getContext(), listaApuntes, (apunte, position) -> {
+            // Cuando se pulsa el icono de la papelera, llamamos al diálogo de confirmación
+            mostrarDialogoConfirmacion(apunte, position);
+        });
         recyclerApuntes.setAdapter(adapter);
 
-        // OBTENER USUARIO ACTUAL Y CARGAR DATOS
         FirebaseUser currentUser = mAuth.getCurrentUser();
         if (currentUser != null) {
-            String uid = currentUser.getUid();
-            Log.d("FIREBASE_AUTH", "Cargando apuntes para el UID: " + uid);
-            cargarApuntesDesdeRailway(uid);
-        } else {
-            Toast.makeText(getContext(), "Usuario no identificado", Toast.LENGTH_SHORT).show();
-            // Aquí podrías redirigir al LoginActivity si quisieras
+            cargarApuntesDesdeRailway(currentUser.getUid());
         }
 
         btnCrearApunte.setOnClickListener(v -> {
@@ -74,33 +71,61 @@ public class ApuntesFragment extends Fragment {
         return root;
     }
 
+    // --- NUEVO MÉTODO: Diálogo de confirmación ---
+    private void mostrarDialogoConfirmacion(Apuntes apunte, int position) {
+        new AlertDialog.Builder(getContext())
+                .setTitle("Eliminar apunte")
+                .setMessage("¿Estás seguro de que quieres borrar '" + apunte.getTitulo() + "'?")
+                .setPositiveButton("Eliminar", (dialog, which) -> {
+                    eliminarApunteDesdeAPI(apunte.getId(), position);
+                })
+                .setNegativeButton("Cancelar", null)
+                .show();
+    }
+
+    // --- NUEVO MÉTODO: Llamada a tu Service de Retrofit ---
+    private void eliminarApunteDesdeAPI(String id, int position) {
+        RetrofitClient.getApunteService().eliminarApunte(id).enqueue(new Callback<Void>() {
+            @Override
+            public void onResponse(Call<Void> call, Response<Void> response) {
+                if (!isAdded()) return;
+
+                if (response.isSuccessful()) {
+                    // Eliminamos de la lista local y avisamos al adapter
+                    listaApuntes.remove(position);
+                    adapter.notifyItemRemoved(position);
+                    Toast.makeText(getContext(), "Apunte eliminado", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(getContext(), "No se pudo eliminar", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Void> call, Throwable t) {
+                if (!isAdded()) return;
+                Toast.makeText(getContext(), "Error de conexión", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
     private void cargarApuntesDesdeRailway(String uid) {
         RetrofitClient.getApunteService().getApuntesByUser(uid).enqueue(new Callback<List<Apuntes>>() {
             @Override
             public void onResponse(Call<List<Apuntes>> call, Response<List<Apuntes>> response) {
-                // 1. PRIMERO: Comprobamos si el fragmento sigue activo para evitar el crash
-                if (!isAdded() || getContext() == null) {
-                    return;
-                }
+                if (!isAdded() || getContext() == null) return;
 
                 if (response.isSuccessful() && response.body() != null) {
                     listaApuntes.clear();
                     listaApuntes.addAll(response.body());
                     adapter.notifyDataSetChanged();
-
-                    if (listaApuntes.isEmpty()) {
-                        Toast.makeText(getContext(), "No tienes apuntes todavía", Toast.LENGTH_SHORT).show();
-                    }
                 } else {
-                    // Aquí es donde probablemente estaba saltando el Toast antes del crash
                     Log.e("API_ERROR", "Código: " + response.code());
-                    Toast.makeText(getContext(), "Error del servidor: " + response.code(), Toast.LENGTH_SHORT).show();
                 }
             }
             @Override
             public void onFailure(Call<List<Apuntes>> call, Throwable t) {
+                if (!isAdded()) return;
                 Log.e("API_FAILURE", t.getMessage());
-                Toast.makeText(getContext(), "Error de red", Toast.LENGTH_SHORT).show();
             }
         });
     }
