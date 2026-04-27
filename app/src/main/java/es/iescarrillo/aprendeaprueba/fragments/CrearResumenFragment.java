@@ -161,16 +161,14 @@ public class CrearResumenFragment extends Fragment {
         String tituloPersonalizado = etTitulo.getText().toString();
         String categoriaPersonalizada = spinnerCategoria.getSelectedItem().toString();
 
-        // El contenido que enviamos a la IA es el del apunte seleccionado
-        // Nota: Asegúrate de que tu modelo Apunte tenga un campo 'descripcion' o 'contenido'
-        pedirResumenAlBackend(seleccionado.getDescripcion(), tituloPersonalizado, categoriaPersonalizada);
+        pedirResumenAlBackend(seleccionado.getContenido(), tituloPersonalizado, categoriaPersonalizada);
     }
 
     private void pedirResumenAlBackend(String textoApunte, String tituloNuevo, String categoriaNueva) {
         setCargando(true); // <--- Empieza el efecto visual
 
         Map<String, String> payload = new HashMap<>();
-        payload.put("texto", textoApunte);
+        payload.put("contenido", textoApunte);
 
         RetrofitClient.getResumenService().generarResumen(payload).enqueue(new Callback<Map<String, String>>() {
             @Override

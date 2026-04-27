@@ -5,6 +5,7 @@ import java.util.concurrent.TimeUnit;
 import es.iescarrillo.aprendeaprueba.services.ApunteService;
 import es.iescarrillo.aprendeaprueba.services.ImgBBService;
 import es.iescarrillo.aprendeaprueba.services.ResumenService; // Importa el nuevo servicio
+import es.iescarrillo.aprendeaprueba.services.TestService;
 import okhttp3.OkHttpClient;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
@@ -39,5 +40,9 @@ public class RetrofitClient {
 
     public static ImgBBService getImgBBService() {
         return getClient("https://api.imgbb.com/").create(ImgBBService.class);
+    }
+
+    public static TestService getTestService() {
+        return getClient(BASE_URL).create(TestService.class);
     }
 }
