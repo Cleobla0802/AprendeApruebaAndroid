@@ -1,19 +1,21 @@
 package es.iescarrillo.aprendeaprueba.activities;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 
-import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -25,7 +27,6 @@ import es.iescarrillo.aprendeaprueba.fragments.ResumenesFragment;
 
 public class HomeActivity extends AppCompatActivity {
 
-    BottomNavigationView bottomNavigationView;
     DrawerLayout drawerLayout;
     NavigationView navigationView;
     FirebaseAuth mAuth;
@@ -37,8 +38,7 @@ public class HomeActivity extends AppCompatActivity {
 
         mAuth = FirebaseAuth.getInstance();
         drawerLayout = findViewById(R.id.drawerLayout);
-        navigationView = findViewById(R.id.navigationView);
-        bottomNavigationView = findViewById(R.id.bottom_navigation);
+        navigationView = findViewById(R.id.nav_view);
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -62,26 +62,25 @@ public class HomeActivity extends AppCompatActivity {
             return true;
         });
 
-        loadFragment(new ApuntesFragment());
-
-        bottomNavigationView.setOnItemSelectedListener(item -> {
-            Fragment selectedFragment = null;
-            int itemId = item.getItemId();
-
-            if (itemId == R.id.nav_apuntes) {
-                selectedFragment = new ApuntesFragment();
-            } else if (itemId == R.id.nav_pruebas) {
-                selectedFragment = new PruebasFragment();
-            } else if (itemId == R.id.nav_resumenes) {
-                selectedFragment = new ResumenesFragment();
-            }
-
-            if (selectedFragment != null) {
-                loadFragment(selectedFragment);
-            }
-
-            return true;
+        findViewById(R.id.btnNavApuntes).setOnClickListener(v -> {
+            loadFragment(new ApuntesFragment());
+            setActiveNav(0);
         });
+
+        findViewById(R.id.btnNavResumenes).setOnClickListener(v -> {
+            loadFragment(new ResumenesFragment());
+
+            setActiveNav(2);
+        });
+
+        findViewById(R.id.btnNavPruebas).setOnClickListener(v -> {
+            loadFragment(new PruebasFragment());
+            setActiveNav(1);
+        });
+
+        loadFragment(new ApuntesFragment());
+        setActiveNav(0);
+
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
@@ -93,6 +92,39 @@ public class HomeActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    private void setActiveNav(int index) {
+        int colorActivo = Color.parseColor("#6C63FF");
+        int colorInactivo = Color.parseColor("#AAAAAA");
+
+        ConstraintLayout[] circles = {
+                findViewById(R.id.circleApuntes),
+                findViewById(R.id.circlePruebas),
+                findViewById(R.id.circleResumenes)
+        };
+        ImageView[] iconsFlat = {
+                findViewById(R.id.iconFlatApuntes),
+                findViewById(R.id.iconFlatPruebas),
+                findViewById(R.id.iconFlatResumenes)
+        };
+        TextView[] texts = {
+                findViewById(R.id.textApuntes),
+                findViewById(R.id.textPruebas),
+                findViewById(R.id.textResumenes)
+        };
+
+        for (int i = 0; i < circles.length; i++) {
+            if (i == index) {
+                circles[i].setVisibility(View.VISIBLE);
+                iconsFlat[i].setVisibility(View.GONE);
+                texts[i].setTextColor(colorActivo);
+            } else {
+                circles[i].setVisibility(View.GONE);
+                iconsFlat[i].setVisibility(View.VISIBLE);
+                texts[i].setTextColor(colorInactivo);
+            }
+        }
     }
 
     private void cargarDatosUsuario() {
@@ -113,6 +145,4 @@ public class HomeActivity extends AppCompatActivity {
                 .replace(R.id.fragment_container, fragment)
                 .commit();
     }
-
-
 }
