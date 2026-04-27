@@ -25,6 +25,8 @@ import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -34,6 +36,7 @@ import java.util.Map;
 
 import es.iescarrillo.aprendeaprueba.R;
 import es.iescarrillo.aprendeaprueba.api.RetrofitClient;
+import es.iescarrillo.aprendeaprueba.models.Apuntes;
 import es.iescarrillo.aprendeaprueba.models.ImgBBResponse;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
@@ -98,12 +101,17 @@ public class CrearApunteFragment extends Fragment {
         String[] dificultades = {"Fácil", "Intermedio", "Difícil"};
 
         if (getContext() != null) {
-            // Configurar Categoría
-            ArrayAdapter<String> adapterCat = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_dropdown_item, categorias);
+            // Usamos TU nuevo layout: R.layout.spinner_item_blanco
+            ArrayAdapter<String> adapterCat = new ArrayAdapter<>(getContext(),
+                    R.layout.spinner_item_blanco, categorias);
+            // Esto es para que la lista al abrirse también use el texto blanco
+            adapterCat.setDropDownViewResource(R.layout.spinner_item_blanco);
             spinnerCategoria.setAdapter(adapterCat);
 
-            // Configurar Dificultad (Esto era lo que faltaba)
-            ArrayAdapter<String> adapterDif = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_dropdown_item, dificultades);
+            // Lo mismo para Dificultad
+            ArrayAdapter<String> adapterDif = new ArrayAdapter<>(getContext(),
+                    R.layout.spinner_item_blanco, dificultades);
+            adapterDif.setDropDownViewResource(R.layout.spinner_item_blanco);
             spinnerDificultad.setAdapter(adapterDif);
         }
     }
@@ -122,10 +130,12 @@ public class CrearApunteFragment extends Fragment {
         subirImagenAImgBB();
     }
 
+    // 1. PRIMER PASO: Subir la imagen a ImgBB
     private void subirImagenAImgBB() {
         try {
             if (getContext() == null) return;
 
+            // Crear archivo temporal para la subida
             File file = new File(getContext().getCacheDir(), "temp_image");
             InputStream inputStream = getContext().getContentResolver().openInputStream(imagenUri);
             FileOutputStream outputStream = new FileOutputStream(file);
@@ -140,13 +150,15 @@ public class CrearApunteFragment extends Fragment {
             RequestBody requestFile = RequestBody.create(MediaType.parse("image/*"), file);
             MultipartBody.Part body = MultipartBody.Part.createFormData("image", file.getName(), requestFile);
 
+            // Llamada a ImgBB
             RetrofitClient.getImgBBService().uploadImage(apiKeyImgBB, body).enqueue(new Callback<ImgBBResponse>() {
                 @Override
                 public void onResponse(Call<ImgBBResponse> call, Response<ImgBBResponse> response) {
                     if (response.isSuccessful() && response.body() != null) {
+                        // Si ImgBB nos da la URL, pasamos al paso 2 (Backend IA)
                         guardarEnBackend(response.body().getData().getUrl());
                     } else {
-                        Toast.makeText(getContext(), "Error en ImgBB", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getContext(), "Error al subir imagen a ImgBB", Toast.LENGTH_SHORT).show();
                     }
                 }
 
@@ -160,42 +172,64 @@ public class CrearApunteFragment extends Fragment {
         }
     }
 
+    // 2. SEGUNDO PASO: Pedir al Backend que digitalice la imagen
     private void guardarEnBackend(String urlImagen) {
         FirebaseUser user = mAuth.getCurrentUser();
-        if (user == null) {
-            Toast.makeText(getContext(), "Usuario no autenticado", Toast.LENGTH_SHORT).show();
-            return;
-        }
+        if (user == null) return;
 
-        // Crear el mapa de datos para el Body
         Map<String, String> payload = new HashMap<>();
         payload.put("url", urlImagen);
-        payload.put("titulo", etTitulo.getText().toString());
-        payload.put("userId", user.getUid()); // Usamos el UID real de Firebase
-        payload.put("categoria", spinnerCategoria.getSelectedItem().toString());
-        payload.put("dificultad", spinnerDificultad.getSelectedItem().toString());
 
-        Toast.makeText(getContext(), "Digitalizando con IA...", Toast.LENGTH_SHORT).show();
+        Toast.makeText(getContext(), "Digitalizando texto con IA...", Toast.LENGTH_SHORT).show();
 
+        // Llamada a tu servidor en Render
         RetrofitClient.getApunteService().digitalizarApunte(payload).enqueue(new Callback<Map<String, String>>() {
             @Override
             public void onResponse(Call<Map<String, String>> call, Response<Map<String, String>> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     String textoIA = response.body().get("textoIA");
-                    Toast.makeText(getContext(), "¡Éxito! Texto extraído correctamente", Toast.LENGTH_LONG).show();
-                    limpiarFormulario();
+
+                    // Si la IA nos devuelve el texto, pasamos al paso 3 (Firebase directo)
+                    guardarEnFirebaseDesdeAndroid(textoIA, urlImagen, user.getUid());
                 } else {
-                    Toast.makeText(getContext(), "Error servidor: " + response.code(), Toast.LENGTH_SHORT).show();
-                    Log.e("API_ERROR", "Cuerpo error: " + response.errorBody());
+                    Toast.makeText(getContext(), "Error en el servidor de IA", Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
             public void onFailure(Call<Map<String, String>> call, Throwable t) {
-                Log.e("ERROR_CONEXION", t.toString()); // Mira esto en el Logcat de Android Studio
-                Toast.makeText(getContext(), "Error: " + t.getMessage(), Toast.LENGTH_LONG).show();
+                Toast.makeText(getContext(), "Error de conexión con el servidor", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    // 3. TERCER PASO: Guardar todo en Firebase Realtime Database
+    private void guardarEnFirebaseDesdeAndroid(String textoIA, String urlImagen, String userId) {
+        DatabaseReference mDatabase = FirebaseDatabase.getInstance().getReference("apuntes");
+        String apunteId = mDatabase.push().getKey();
+
+        // Construimos el objeto con los datos que ya tenemos en el formulario
+        Apuntes nuevoApunte = new Apuntes();
+        nuevoApunte.setId(apunteId);
+        nuevoApunte.setTitulo(etTitulo.getText().toString().trim());
+        nuevoApunte.setContenido(textoIA); // El texto que viene de la IA
+        nuevoApunte.setImagenUrl(urlImagen);     // La URL que viene de ImgBB
+        nuevoApunte.setUserId(userId);
+        nuevoApunte.setCategoria(spinnerCategoria.getSelectedItem().toString());
+
+        // Si tienes campo dificultad en tu modelo Apuntes, actívalo aquí:
+        // nuevoApunte.setDificultad(spinnerDificultad.getSelectedItem().toString());
+
+        if (apunteId != null) {
+            mDatabase.child(apunteId).setValue(nuevoApunte).addOnSuccessListener(aVoid -> {
+                Toast.makeText(getContext(), "Apunte creado y digitalizado con éxito", Toast.LENGTH_SHORT).show();
+                limpiarFormulario();
+                // Cerramos el fragmento y volvemos al listado
+                getParentFragmentManager().popBackStack();
+            }).addOnFailureListener(e -> {
+                Toast.makeText(getContext(), "Error al guardar en Firebase", Toast.LENGTH_SHORT).show();
+            });
+        }
     }
 
     private void limpiarFormulario() {

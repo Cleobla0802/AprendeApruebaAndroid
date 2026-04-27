@@ -22,6 +22,7 @@ import com.google.firebase.auth.FirebaseUser;
 
 import es.iescarrillo.aprendeaprueba.R;
 import es.iescarrillo.aprendeaprueba.fragments.ApuntesFragment;
+import es.iescarrillo.aprendeaprueba.fragments.ResumenesFragment;
 
 public class HomeActivity extends AppCompatActivity {
 
@@ -36,7 +37,7 @@ public class HomeActivity extends AppCompatActivity {
 
         mAuth = FirebaseAuth.getInstance();
         drawerLayout = findViewById(R.id.drawerLayout);
-        navigationView = findViewById(R.id.navigationView);
+        navigationView = findViewById(R.id.nav_view);
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -63,6 +64,12 @@ public class HomeActivity extends AppCompatActivity {
         findViewById(R.id.btnNavApuntes).setOnClickListener(v -> {
             loadFragment(new ApuntesFragment());
             setActiveNav(0);
+        });
+
+        findViewById(R.id.btnNavResumenes).setOnClickListener(v -> {
+            loadFragment(new ResumenesFragment());
+
+            setActiveNav(2);
         });
 
         loadFragment(new ApuntesFragment());

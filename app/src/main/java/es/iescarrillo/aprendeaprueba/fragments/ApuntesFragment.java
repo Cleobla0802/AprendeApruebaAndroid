@@ -1,5 +1,6 @@
 package es.iescarrillo.aprendeaprueba.fragments;
 
+import android.app.AlertDialog;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -16,6 +17,11 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,9 +40,8 @@ public class ApuntesFragment extends Fragment {
     private RecyclerView recyclerApuntes;
     private ApuntesAdapter adapter;
     private List<Apuntes> listaApuntes = new ArrayList<>();
-
-    // Instancia de Firebase Auth
     private FirebaseAuth mAuth;
+    private DatabaseReference mDatabase;
 
     @Nullable
     @Override
@@ -44,28 +49,24 @@ public class ApuntesFragment extends Fragment {
         View root = inflater.inflate(R.layout.fragment_apuntes, container, false);
 
         mAuth = FirebaseAuth.getInstance();
+        mDatabase = FirebaseDatabase.getInstance().getReference("apuntes");
+
         btnCrearApunte = root.findViewById(R.id.btnCrearApunte);
         recyclerApuntes = root.findViewById(R.id.recyclerApuntes);
-
-        // Configuración del RecyclerView
         recyclerApuntes.setLayoutManager(new LinearLayoutManager(getContext()));
-        adapter = new ApuntesAdapter(getContext(), listaApuntes);
+
+        adapter = new ApuntesAdapter(getContext(), listaApuntes, (apunte, position) -> {
+            mostrarDialogoConfirmacion(apunte, position);
+        });
         recyclerApuntes.setAdapter(adapter);
 
-        // OBTENER USUARIO ACTUAL Y CARGAR DATOS
         FirebaseUser currentUser = mAuth.getCurrentUser();
         if (currentUser != null) {
-            String uid = currentUser.getUid();
-            Log.d("FIREBASE_AUTH", "Cargando apuntes para el UID: " + uid);
-            cargarApuntesDesdeRailway(uid);
-        } else {
-            Toast.makeText(getContext(), "Usuario no identificado", Toast.LENGTH_SHORT).show();
-            // Aquí podrías redirigir al LoginActivity si quisieras
+            escucharCambiosFirebase(currentUser.getUid());
         }
 
         btnCrearApunte.setOnClickListener(v -> {
             getParentFragmentManager().beginTransaction()
-                    .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out, android.R.anim.fade_in, android.R.anim.fade_out)
                     .replace(R.id.fragment_container, new CrearApunteFragment())
                     .addToBackStack(null)
                     .commit();
@@ -74,34 +75,40 @@ public class ApuntesFragment extends Fragment {
         return root;
     }
 
-    private void cargarApuntesDesdeRailway(String uid) {
-        RetrofitClient.getApunteService().getApuntesByUser(uid).enqueue(new Callback<List<Apuntes>>() {
+    private void escucharCambiosFirebase(String uid) {
+        // Query para filtrar por usuario
+        mDatabase.orderByChild("userId").equalTo(uid).addValueEventListener(new ValueEventListener() {
             @Override
-            public void onResponse(Call<List<Apuntes>> call, Response<List<Apuntes>> response) {
-                // 1. PRIMERO: Comprobamos si el fragmento sigue activo para evitar el crash
-                if (!isAdded() || getContext() == null) {
-                    return;
-                }
-
-                if (response.isSuccessful() && response.body() != null) {
-                    listaApuntes.clear();
-                    listaApuntes.addAll(response.body());
-                    adapter.notifyDataSetChanged();
-
-                    if (listaApuntes.isEmpty()) {
-                        Toast.makeText(getContext(), "No tienes apuntes todavía", Toast.LENGTH_SHORT).show();
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                listaApuntes.clear();
+                for (DataSnapshot ds : snapshot.getChildren()) {
+                    Apuntes apunte = ds.getValue(Apuntes.class);
+                    if (apunte != null) {
+                        apunte.setId(ds.getKey());
+                        listaApuntes.add(apunte);
                     }
-                } else {
-                    // Aquí es donde probablemente estaba saltando el Toast antes del crash
-                    Log.e("API_ERROR", "Código: " + response.code());
-                    Toast.makeText(getContext(), "Error del servidor: " + response.code(), Toast.LENGTH_SHORT).show();
                 }
+                adapter.notifyDataSetChanged();
             }
+
             @Override
-            public void onFailure(Call<List<Apuntes>> call, Throwable t) {
-                Log.e("API_FAILURE", t.getMessage());
-                Toast.makeText(getContext(), "Error de red", Toast.LENGTH_SHORT).show();
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e("Firebase", "Error al leer datos", error.toException());
             }
         });
+    }
+
+    private void mostrarDialogoConfirmacion(Apuntes apunte, int position) {
+        new AlertDialog.Builder(getContext())
+                .setTitle("Eliminar apunte")
+                .setMessage("¿Borrar '" + apunte.getTitulo() + "'?")
+                .setPositiveButton("Eliminar", (dialog, which) -> {
+                    // Eliminamos directamente de Firebase para que sea instantáneo
+                    mDatabase.child(apunte.getId()).removeValue().addOnSuccessListener(aVoid -> {
+                        Toast.makeText(getContext(), "Apunte eliminado", Toast.LENGTH_SHORT).show();
+                    });
+                })
+                .setNegativeButton("Cancelar", null)
+                .show();
     }
 }
