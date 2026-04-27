@@ -1,7 +1,10 @@
 package es.iescarrillo.aprendeaprueba.models;
 
+import com.google.firebase.database.IgnoreExtraProperties;
+import com.google.firebase.database.PropertyName;
 import com.google.gson.annotations.SerializedName;
 
+@IgnoreExtraProperties
 public class Apuntes {
 
     private String id;
@@ -13,11 +16,15 @@ public class Apuntes {
     private String userId;
 
     private String categoria;
+
+    @SerializedName("url")
     private String imagenUrl;
 
+    // 1. Constructor vacío (Obligatorio para Firebase)
     public Apuntes() {
     }
 
+    // 2. Constructor de 4 parámetros (El que te pide el error para actualizar/crear localmente)
     public Apuntes(String id, String titulo, String descripcion, String contenido) {
         this.id = id;
         this.titulo = titulo;
@@ -25,6 +32,7 @@ public class Apuntes {
         this.contenido = contenido;
     }
 
+    // 3. Constructor completo (Para cuando tengas todos los datos)
     public Apuntes(String id, String titulo, String descripcion, String contenido, String userId, String categoria, String imagenUrl) {
         this.id = id;
         this.titulo = titulo;
@@ -35,7 +43,8 @@ public class Apuntes {
         this.imagenUrl = imagenUrl;
     }
 
-    // Getters y Setters
+    // --- GETTERS Y SETTERS ---
+
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
 
@@ -48,12 +57,18 @@ public class Apuntes {
     public String getContenido() { return contenido; }
     public void setContenido(String contenido) { this.contenido = contenido; }
 
+    @PropertyName("userId")
     public String getUserId() { return userId; }
+
+    @PropertyName("userId")
     public void setUserId(String userId) { this.userId = userId; }
 
     public String getCategoria() { return categoria; }
     public void setCategoria(String categoria) { this.categoria = categoria; }
 
+    @PropertyName("url")
     public String getImagenUrl() { return imagenUrl; }
+
+    @PropertyName("url")
     public void setImagenUrl(String imagenUrl) { this.imagenUrl = imagenUrl; }
 }

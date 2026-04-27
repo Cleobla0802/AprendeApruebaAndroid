@@ -9,6 +9,8 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.database.FirebaseDatabase;
 
+import java.util.HashMap;
+
 import es.iescarrillo.aprendeaprueba.R;
 import es.iescarrillo.aprendeaprueba.models.Apuntes;
 
@@ -46,12 +48,18 @@ public class DetalleApunteActivity extends AppCompatActivity {
         String descripcion = etDescripcion.getText().toString().trim();
         String contenido = etContenido.getText().toString().trim();
 
-        Apuntes apuntesActualizado = new Apuntes(apunteId, titulo, descripcion, contenido);
+        HashMap<String, Object> update = new HashMap<>();
+        update.put("titulo", titulo);
+        update.put("descripcion", descripcion);
+        update.put("contenido", contenido);
 
         FirebaseDatabase.getInstance().getReference("apuntes")
                 .child(apunteId)
-                .setValue(apuntesActualizado)
-                .addOnSuccessListener(aVoid -> Toast.makeText(this, "Apunte actualizado", Toast.LENGTH_SHORT).show())
+                .updateChildren(update)
+                .addOnSuccessListener(aVoid -> {
+                    Toast.makeText(this, "Apunte actualizado", Toast.LENGTH_SHORT).show();
+                    finish(); // Volver atrás para ver la lista actualizada
+                })
                 .addOnFailureListener(e -> Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show());
     }
 

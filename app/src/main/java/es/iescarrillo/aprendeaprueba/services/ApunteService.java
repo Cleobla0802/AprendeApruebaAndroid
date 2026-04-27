@@ -12,13 +12,6 @@ import retrofit2.http.Path;
 
 public interface ApunteService {
 
-
     @POST("api/apuntes/digitalizar")
     Call<Map<String, String>> digitalizarApunte(@Body Map<String, String> payload);
-
-    @GET("api/apuntes/usuario/{uid}")
-    Call<List<Apuntes>> getApuntesByUser(@Path("uid") String uid);
-
-    @DELETE("api/apuntes/{id}")
-    Call<Void> eliminarApunte(@Path("id") String id);
 }
