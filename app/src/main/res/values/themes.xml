@@ -1,9 +1,33 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
-    <style name="Base.Theme.AprendeAprueba" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+
+    <style name="Theme.AprendeAprueba" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">#A020F0</item>
+        <item name="colorOnPrimary">@android:color/white</item>
+
+        <item name="colorSurface">#FFFFFF</item>
+        <item name="colorOnSurface">#1C1B1F</item>
+        <item name="colorSurfaceVariant">#E7E0EC</item>
+
+        <item name="listPopupWindowStyle">@style/Widget.Material3.PopupMenu.ListPopupWindow</item>
     </style>
 
-    <style name="Theme.AprendeAprueba" parent="Base.Theme.AprendeAprueba" />
+    <style name="ShapeAppearance.App.SmallComponent" parent="ShapeAppearance.Material3.SmallComponent">
+        <item name="cornerSize">50%</item>
+    </style>
+
+    <style name="ShapeAppearance.App.LargeComponent" parent="ShapeAppearance.Material3.LargeComponent">
+        <item name="cornerSizeTopRight">32dp</item>
+        <item name="cornerSizeBottomRight">0dp</item>
+    </style>
+
+    <style name="App.NavSubheader" parent="TextAppearance.Material3.LabelLarge">
+        <item name="android:textColor">#A020F0</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textAllCaps">true</item>
+    </style>
+
+    <style name="Widget.App.NavigationView" parent="Widget.Material3.NavigationView">
+        <item name="subheaderTextAppearance">@style/App.NavSubheader</item>
+    </style>
+
 </resources>

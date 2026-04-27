@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#121212"> <com.google.android.material.appbar.AppBarLayout
+    android:id="@+id/appBarLayout"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    app:layout_constraintTop_toTopOf="parent">
+
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbarDetalle"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="#1C1B1F"
+        app:title="Editar Apunte"
+        app:titleTextColor="#FFFFFF"
+        app:navigationIcon="@android:drawable/ic_menu_revert"
+        app:navigationIconTint="#FFFFFF" />
+</com.google.android.material.appbar.AppBarLayout>
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/appBarLayout">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="20dp">
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilTitulo"
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:hint="Título del apunte"
+                app:hintTextColor="#A020F0"
+                app:boxStrokeColor="#A020F0"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etTitulo"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColor="#FFFFFF"
+                    android:inputType="textCapSentences" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilCategoria"
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:hint="Categoría"
+                app:hintTextColor="#A020F0"
+                app:boxStrokeColor="#A020F0"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tilTitulo">
+
+                <AutoCompleteTextView
+                    android:id="@+id/spinnerCategoria"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="none"
+                    android:textColor="#FFFFFF"
+                    android:textColorHint="#BBBBBB"
+                    android:popupBackground="#1C1B1F" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilContenido"
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:hint="Escribe tus apuntes aquí..."
+                app:hintTextColor="#A020F0"
+                app:boxStrokeColor="#A020F0"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tilCategoria">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etContenido"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="top"
+                    android:textColor="#FFFFFF"
+                    android:inputType="textMultiLine"
+                    android:minLines="12" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <ProgressBar
+                android:id="@+id/pbCargando"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="32dp"
+                android:visibility="gone"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tilContenido" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.core.widget.NestedScrollView>
+
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+        android:id="@+id/fabGuardar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="24dp"
+        android:text="Guardar Cambios"
+        android:textColor="#FFFFFF"
+        app:backgroundTint="#A020F0"
+        app:icon="@android:drawable/ic_menu_save"
+        app:iconTint="#FFFFFF"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

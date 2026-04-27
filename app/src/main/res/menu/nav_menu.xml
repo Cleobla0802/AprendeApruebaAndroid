@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:title="CONTENIDO">
+        <menu>
+            <item
+                android:id="@+id/nav_apuntes"
+                android:icon="@drawable/ic_sidebar_apuntes"
+                android:title="Mis apuntes" />
+            <item
+                android:id="@+id/nav_resumenes"
+                android:icon="@drawable/ic_sidebar_resumenes"
+                android:title="Resúmenes" />
+            <item
+                android:id="@+id/nav_pruebas"
+                android:icon="@drawable/ic_sidebar_pruebas"
+                android:title="Pruebas" />
+        </menu>
+    </item>
+
+    <item android:title="CUENTA">
+        <menu>
+            <item
+                android:id="@+id/nav_profile"
+                android:icon="@drawable/ic_menu_person"
+                android:title="Mi perfil" />
+            <item
+                android:id="@+id/nav_logout"
+                android:icon="@drawable/ic_menu_logout"
+                android:title="Cerrar sesión" />
+        </menu>
+    </item>
+</menu>

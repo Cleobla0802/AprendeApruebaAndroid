@@ -1,35 +1,71 @@
 <?xml version="1.0" encoding="utf-8"?>
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/cardApunte"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_margin="8dp"
+    app:cardElevation="4dp"
     app:cardCornerRadius="12dp"
-    app:cardElevation="4dp">
+    app:cardBackgroundColor="#1C1B1F"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?attr/selectableItemBackground">
 
     <LinearLayout
-        android:orientation="vertical"
-        android:padding="16dp"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
 
-        <TextView
-            android:id="@+id/tvTitulo"
+        <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Título"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:textColor="@android:color/black"/>
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:id="@+id/tvTitulo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Título"
+                android:textColor="#FFFFFF"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:layout_alignParentStart="true"
+                android:layout_toStartOf="@id/btnBorrar"/>
+
+            <ImageButton
+                android:id="@+id/btnBorrar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@android:drawable/ic_menu_delete"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                app:tint="#FF4444"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"/>
+        </RelativeLayout>
 
         <TextView
             android:id="@+id/tvDescripcion"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Descripción"
+            android:text="Descripción del contenido..."
+            android:textColor="#BBBBBB"
             android:textSize="14sp"
-            android:textColor="@android:color/darker_gray"
-            android:layout_marginTop="4dp"/>
+            android:layout_marginTop="4dp"
+            android:maxLines="2"
+            android:ellipsize="end"/>
+
+        <TextView
+            android:id="@+id/tvCategoriaTag"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:paddingHorizontal="8dp"
+            android:paddingVertical="2dp"
+            android:text="Categoría"
+            android:textColor="#A020F0"
+            android:textSize="12sp"
+            android:textStyle="bold" />
 
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

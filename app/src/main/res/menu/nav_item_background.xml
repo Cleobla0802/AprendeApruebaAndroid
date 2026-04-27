@@ -1,0 +1,37 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:title="Contenido">
+        <menu>
+            <item
+                android:id="@+id/nav_apuntes"
+                android:icon="@drawable/ic_menu_apuntes"
+                android:title="Mis apuntes" />
+            <item
+                android:id="@+id/nav_nuevo_apunte"
+                android:icon="@drawable/ic_menu_add"
+                android:title="Nuevo apunte" />
+            <item
+                android:id="@+id/nav_resumenes"
+                android:icon="@drawable/ic_menu_resumenes"
+                android:title="Resúmenes" />
+            <item
+                android:id="@+id/nav_pruebas"
+                android:icon="@drawable/ic_menu_pruebas"
+                android:title="Pruebas" />
+        </menu>
+    </item>
+
+    <item android:title="Cuenta">
+        <menu>
+            <item
+                android:id="@+id/nav_perfil"
+                android:icon="@drawable/ic_menu_person"
+                android:title="Mi perfil" />
+            <item
+                android:id="@+id/nav_logout"
+                android:icon="@drawable/ic_menu_logout"
+                android:title="Cerrar sesión" />
+        </menu>
+    </item>
+
+</menu>
