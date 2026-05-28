@@ -5,118 +5,123 @@
     android:layout_height="match_parent"
     android:background="@drawable/fondo">
 
-    <!-- Forma curva superior izquierda (púrpura) -->
+    <!-- Guidelines for structural layout -->
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/gl_start"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.08" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/gl_end"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.92" />
+
+    <!-- Forma curva superior izquierda -->
     <View
         android:id="@+id/curve_top_left"
-        android:layout_width="300dp"
-        android:layout_height="400dp"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
         android:background="@drawable/vector1"
-        app:layout_constraintEnd_toStartOf="@id/center_content"
+        app:layout_constraintDimensionRatio="300:400"
+        app:layout_constraintHeight_percent="0.45"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- Forma curva inferior derecha-->
+    <!-- Forma curva inferior derecha -->
     <View
         android:id="@+id/curve_bottom_right"
-        android:layout_width="350dp"
-        android:layout_height="450dp"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
         android:background="@drawable/vector2"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintDimensionRatio="350:450"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/center_content" />
+        app:layout_constraintHeight_percent="0.5" />
 
-    <!-- Contenido central (centrado vertical/horizontal) -->
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/center_content"
+    <!-- Logo A&A -->
+    <ImageView
+        android:id="@+id/logo"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:cropToPadding="false"
+        android:src="@drawable/logotfg"
+        app:layout_constraintBottom_toTopOf="@id/text_intro"
+        app:layout_constraintDimensionRatio="150:200"
+        app:layout_constraintEnd_toEndOf="@id/gl_end"
+        app:layout_constraintHeight_percent="0.25"
+        app:layout_constraintStart_toStartOf="@id/gl_start"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_chainStyle="packed" />
+
+    <!-- Texto introductorio -->
+    <TextView
+        android:id="@+id/text_intro"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:paddingHorizontal="24dp"
+        android:layout_marginTop="24dp"
+        android:lineSpacingExtra="4dp"
+        android:text="Aprende Aprueba te ayudará a aprobar este año de la forma más fácil y rápida jamás vista"
+        android:textAlignment="center"
+        android:textColor="#FFFFFF"
+        android:textSize="16sp"
+        app:layout_constraintBottom_toTopOf="@id/title_slogan"
+        app:layout_constraintEnd_toEndOf="@id/gl_end"
+        app:layout_constraintStart_toStartOf="@id/gl_start"
+        app:layout_constraintTop_toBottomOf="@id/logo" />
+
+    <!-- Título resaltado -->
+    <TextView
+        android:id="@+id/title_slogan"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="Somos tu mejor maestro"
+        android:textAlignment="center"
+        android:textColor="#64B5F6"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@id/text_detail"
+        app:layout_constraintEnd_toEndOf="@id/gl_end"
+        app:layout_constraintStart_toStartOf="@id/gl_start"
+        app:layout_constraintTop_toBottomOf="@id/text_intro" />
+
+    <!-- Texto detalle -->
+    <TextView
+        android:id="@+id/text_detail"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:lineSpacingExtra="4dp"
+        android:text="Te ayudaremos a mejorar tu capacidad de aprendizaje un 200%"
+        android:textAlignment="center"
+        android:textColor="#AAAAAA"
+        android:textSize="16sp"
+        app:layout_constraintBottom_toTopOf="@id/button_start"
+        app:layout_constraintEnd_toEndOf="@id/gl_end"
+        app:layout_constraintStart_toStartOf="@id/gl_start"
+        app:layout_constraintTop_toBottomOf="@id/title_slogan" />
+
+    <!-- Botón -->
+    <Button
+        android:id="@+id/button_start"
+        android:layout_width="0dp"
+        android:layout_height="56dp"
+        android:layout_marginTop="32dp"
+        android:backgroundTint="#7E57C2"
+        android:insetTop="0dp"
+        android:insetBottom="0dp"
+        android:text="¡EMPIEZA YA A SER PRODUCTIVO!"
+        android:textColor="#FFFFFF"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        app:cornerRadius="28dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
-
-        <!-- Logo A&A (círculo con fondo verde texturizado) -->
-        <ImageView
-            android:id="@+id/logo"
-            android:layout_width="150dp"
-            android:layout_height="200dp"
-            android:layout_marginBottom="70dp"
-            android:cropToPadding="false"
-            android:src="@drawable/logotfg"
-            app:layout_constraintBottom_toTopOf="@id/text_intro"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <!-- Texto introductorio -->
-        <TextView
-            android:id="@+id/text_intro"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:lineSpacingExtra="4dp"
-            android:text="Aprende Aprueba te ayudará a aprobar este año de la forma más fácil y rápida jamás vista"
-            android:textAlignment="center"
-            android:textColor="#FFFFFF"
-            android:textSize="16sp"
-            android:layout_marginBottom="30dp"
-            app:layout_constraintBottom_toTopOf="@id/title_slogan"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/logo" />
-
-        <!-- Título resaltado -->
-        <TextView
-            android:id="@+id/title_slogan"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:text="Somos tu mejor maestro"
-            android:textAlignment="center"
-            android:textColor="#64B5F6"
-            android:textSize="24sp"
-            android:textStyle="bold"
-            android:layout_marginBottom="30dp"
-            app:layout_constraintBottom_toTopOf="@id/text_detail"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/text_intro" />
-
-        <!-- Texto detalle -->
-        <TextView
-            android:id="@+id/text_detail"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:lineSpacingExtra="4dp"
-            android:text="Te ayudaremos a mejorar tu capacidad de aprendizaje un 200%"
-            android:textAlignment="center"
-            android:textColor="#AAAAAA"
-            android:textSize="16sp"
-            android:layout_marginBottom="30dp"
-            app:layout_constraintBottom_toTopOf="@id/button_start"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/title_slogan" />
-
-        <!-- Botón -->
-        <Button
-            android:id="@+id/button_start"
-            android:layout_width="0dp"
-            android:layout_height="56dp"
-            android:backgroundTint="#7E57C2"
-            android:insetTop="0dp"
-            android:insetBottom="0dp"
-            android:text="¡EMPIEZA YA A SER PRODUCTIVO!"
-            android:textColor="#FFFFFF"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            android:layout_marginTop="50dp"
-            app:cornerRadius="28dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/text_detail"
-            app:layout_constraintVertical_bias="0.2" />
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
+        app:layout_constraintEnd_toEndOf="@id/gl_end"
+        app:layout_constraintStart_toStartOf="@id/gl_start"
+        app:layout_constraintTop_toBottomOf="@id/text_detail" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

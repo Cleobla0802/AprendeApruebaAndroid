@@ -11,6 +11,20 @@
         android:layout_height="wrap_content"
         android:padding="24dp">
 
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/gl_start"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent="0.05" />
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/gl_end"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent="0.95" />
+
         <ImageView
             android:id="@+id/ivIconHeader"
             android:layout_width="50dp"
@@ -36,12 +50,14 @@
             app:layout_constraintTop_toBottomOf="@id/ivIconHeader" />
 
         <com.google.android.material.card.MaterialCardView
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
             app:cardBackgroundColor="#1C1B1F"
             app:cardCornerRadius="20dp"
             app:cardElevation="8dp"
+            app:layout_constraintEnd_toEndOf="@id/gl_end"
+            app:layout_constraintStart_toStartOf="@id/gl_start"
             app:layout_constraintTop_toBottomOf="@id/tvTitleMain"
             app:strokeColor="#33FFFFFF"
             app:strokeWidth="1dp">
@@ -87,11 +103,13 @@
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/layoutEtTitulo"
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                    android:layout_width="match_parent"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
                     app:boxStrokeColor="#A020F0"
                     app:hintEnabled="false"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@id/lblTitulo">
 
                     <com.google.android.material.textfield.TextInputEditText
@@ -140,17 +158,17 @@
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/layoutEtDesc"
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                    android:layout_width="match_parent"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
                     app:boxStrokeColor="#A020F0"
-                    app:hintEnabled="false"
-
                     app:counterEnabled="true"
                     app:counterMaxLength="150"
-                    app:counterTextColor="@android:color/white"
                     app:counterOverflowTextColor="@android:color/holo_red_light"
-
+                    app:counterTextColor="@android:color/white"
+                    app:hintEnabled="false"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@id/lblDescripcion">
 
                     <com.google.android.material.textfield.TextInputEditText
@@ -159,8 +177,8 @@
                         android:layout_height="wrap_content"
                         android:gravity="top"
                         android:hint="Escribe algún detalle específico..."
-                        android:minLines="3"
                         android:maxLength="150"
+                        android:minLines="3"
                         android:textColor="@android:color/white"
                         android:textColorHint="#555555" />
 
@@ -168,7 +186,7 @@
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnGenerarResumenIA"
-                    android:layout_width="match_parent"
+                    android:layout_width="0dp"
                     android:layout_height="60dp"
                     android:layout_marginTop="24dp"
                     android:backgroundTint="#A020F0"
@@ -177,9 +195,9 @@
                     android:textSize="16sp"
                     android:textStyle="bold"
                     app:cornerRadius="12dp"
-                    app:layout_constraintTop_toBottomOf="@id/layoutEtDesc"
+                    app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent" />
+                    app:layout_constraintTop_toBottomOf="@id/layoutEtDesc" />
 
                 <com.google.android.material.progressindicator.CircularProgressIndicator
                     android:id="@+id/progressCargando"
@@ -188,11 +206,11 @@
                     android:indeterminate="true"
                     android:visibility="gone"
                     app:indicatorColor="@android:color/white"
-                    app:trackThickness="3dp"
-                    app:layout_constraintTop_toTopOf="@id/btnGenerarResumenIA"
                     app:layout_constraintBottom_toBottomOf="@id/btnGenerarResumenIA"
+                    app:layout_constraintEnd_toEndOf="@id/btnGenerarResumenIA"
                     app:layout_constraintStart_toStartOf="@id/btnGenerarResumenIA"
-                    app:layout_constraintEnd_toEndOf="@id/btnGenerarResumenIA" />
+                    app:layout_constraintTop_toTopOf="@id/btnGenerarResumenIA"
+                    app:trackThickness="3dp" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
         </com.google.android.material.card.MaterialCardView>

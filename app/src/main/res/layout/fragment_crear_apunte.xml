@@ -4,14 +4,28 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/fondo"
-    android:fillViewport="true"
     android:clickable="true"
+    android:fillViewport="true"
     android:focusable="true">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:padding="24dp">
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/gl_start"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent="0.05" />
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/gl_end"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent="0.95" />
 
         <ImageView
             android:id="@+id/ivIconHeader"
@@ -38,36 +52,45 @@
             app:layout_constraintTop_toBottomOf="@id/ivIconHeader" />
 
         <com.google.android.material.card.MaterialCardView
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
             app:cardBackgroundColor="#1C1B1F"
             app:cardCornerRadius="20dp"
             app:cardElevation="8dp"
+            app:layout_constraintEnd_toEndOf="@id/gl_end"
+            app:layout_constraintStart_toStartOf="@id/gl_start"
             app:layout_constraintTop_toBottomOf="@id/tvTitleMain"
             app:strokeColor="#33FFFFFF"
             app:strokeWidth="1dp">
 
-            <LinearLayout
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
                 android:padding="20dp">
 
                 <TextView
+                    android:id="@+id/labelTitulo"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="✎ Nombre del apunte"
                     android:textColor="@android:color/white"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
 
                 <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tilTitulo"
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                    android:layout_width="match_parent"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
                     app:boxStrokeColor="#A020F0"
-                    app:hintEnabled="false">
+                    app:hintEnabled="false"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/labelTitulo">
+
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/etTitulo"
                         android:layout_width="match_parent"
@@ -78,20 +101,28 @@
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <TextView
+                    android:id="@+id/labelDescripcion"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
                     android:text="📝 Descripción"
                     android:textColor="@android:color/white"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/tilTitulo" />
 
                 <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tilDescripcion"
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                    android:layout_width="match_parent"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
                     app:boxStrokeColor="#A020F0"
-                    app:hintEnabled="false">
+                    app:hintEnabled="false"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/labelDescripcion">
+
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/etDescripcion"
                         android:layout_width="match_parent"
@@ -101,73 +132,80 @@
                         android:textColorHint="#555555" />
                 </com.google.android.material.textfield.TextInputLayout>
 
-                <LinearLayout
-                    android:layout_width="match_parent"
+                <TextView
+                    android:id="@+id/labelCategoria"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
-                    android:orientation="horizontal">
+                    android:text="📂 Categoría"
+                    android:textColor="@android:color/white"
+                    android:textSize="12sp"
+                    app:layout_constraintEnd_toStartOf="@+id/labelDificultad"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/tilDescripcion" />
 
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:layout_marginEnd="4dp"
-                        android:orientation="vertical">
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="📂 Categoría"
-                            android:textColor="@android:color/white"
-                            android:textSize="12sp" />
-                        <Spinner
-                            android:id="@+id/spinnerCategoria"
-                            android:layout_width="match_parent"
-                            android:layout_height="48dp"
-                            android:layout_marginTop="4dp"
-                            android:theme="@style/ThemeOverlay.AppCompat.Dark" android:backgroundTint="@android:color/white"
-                            android:popupBackground="#1C1B1F" />
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:layout_marginStart="4dp"
-                        android:orientation="vertical">
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="⚡ Dificultad"
-                            android:textColor="@android:color/white"
-                            android:textSize="12sp" />
-                        <Spinner
-                            android:id="@+id/spinnerDificultad"
-                            android:layout_width="match_parent"
-                            android:layout_height="48dp"
-                            android:layout_marginTop="4dp"
-                            android:theme="@style/ThemeOverlay.AppCompat.Dark"
-                            android:backgroundTint="@android:color/white"
-                            android:popupBackground="#1C1B1F" />
-                    </LinearLayout>
-                </LinearLayout>
+                <Spinner
+                    android:id="@+id/spinnerCategoria"
+                    android:layout_width="0dp"
+                    android:layout_height="48dp"
+                    android:layout_marginTop="4dp"
+                    android:layout_marginEnd="4dp"
+                    android:backgroundTint="@android:color/white"
+                    android:popupBackground="#1C1B1F"
+                    android:theme="@style/ThemeOverlay.AppCompat.Dark"
+                    app:layout_constraintEnd_toStartOf="@+id/spinnerDificultad"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/labelCategoria" />
 
                 <TextView
+                    android:id="@+id/labelDificultad"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="⚡ Dificultad"
+                    android:textColor="@android:color/white"
+                    android:textSize="12sp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@id/labelCategoria"
+                    app:layout_constraintTop_toBottomOf="@id/tilDescripcion" />
+
+                <Spinner
+                    android:id="@+id/spinnerDificultad"
+                    android:layout_width="0dp"
+                    android:layout_height="48dp"
+                    android:layout_marginStart="4dp"
+                    android:layout_marginTop="4dp"
+                    android:backgroundTint="@android:color/white"
+                    android:popupBackground="#1C1B1F"
+                    android:theme="@style/ThemeOverlay.AppCompat.Dark"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@id/spinnerCategoria"
+                    app:layout_constraintTop_toBottomOf="@id/labelDificultad" />
+
+                <TextView
+                    android:id="@+id/labelImagen"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="20dp"
                     android:text="☁ Imagen de tus apuntes"
                     android:textColor="@android:color/white"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/spinnerCategoria" />
 
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/btnSeleccionarImagen"
-                    android:layout_width="match_parent"
+                    android:layout_width="0dp"
                     android:layout_height="150dp"
                     android:layout_marginTop="8dp"
                     app:cardBackgroundColor="#000000"
                     app:cardCornerRadius="12dp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/labelImagen"
                     app:strokeColor="#55FFFFFF"
                     app:strokeWidth="1dp">
+
                     <ImageView
                         android:id="@+id/ivPreview"
                         android:layout_width="match_parent"
@@ -177,29 +215,34 @@
                         app:tint="#55FFFFFF" />
                 </com.google.android.material.card.MaterialCardView>
 
-                <LinearLayout
-                    android:layout_width="match_parent"
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnLimpiar"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="24dp"
-                    android:gravity="end">
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnLimpiar"
-                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Limpiar"
-                        android:textColor="@android:color/white"
-                        app:strokeColor="@android:color/white" />
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnGuardar"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="8dp"
-                        android:backgroundTint="#A020F0"
-                        android:text="✨ Digitalizar" />
-                </LinearLayout>
+                    android:layout_marginEnd="8dp"
+                    android:text="Limpiar"
+                    android:textColor="@android:color/white"
+                    app:layout_constraintEnd_toStartOf="@+id/btnGuardar"
+                    app:layout_constraintHorizontal_bias="1.0"
+                    app:layout_constraintHorizontal_chainStyle="packed"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/btnSeleccionarImagen"
+                    app:strokeColor="@android:color/white" />
 
-            </LinearLayout>
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnGuardar"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:backgroundTint="#A020F0"
+                    android:text="✨ Digitalizar"
+                    app:layout_constraintBottom_toBottomOf="@id/btnLimpiar"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@id/btnLimpiar"
+                    app:layout_constraintTop_toTopOf="@id/btnLimpiar" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
         </com.google.android.material.card.MaterialCardView>
 
     </androidx.constraintlayout.widget.ConstraintLayout>

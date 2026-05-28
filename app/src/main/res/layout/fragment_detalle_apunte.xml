@@ -1,25 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#121212"> <com.google.android.material.appbar.AppBarLayout
-    android:id="@+id/appBarLayout"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    app:layout_constraintTop_toTopOf="parent">
+    android:background="#121212">
 
-    <com.google.android.material.appbar.MaterialToolbar
-        android:id="@+id/toolbarDetalle"
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appBarLayout"
         android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        android:background="#1C1B1F"
-        app:title="Editar Apunte"
-        app:titleTextColor="#FFFFFF"
-        app:navigationIcon="@android:drawable/ic_menu_revert"
-        app:navigationIconTint="#FFFFFF" />
-</com.google.android.material.appbar.AppBarLayout>
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/toolbarDetalle"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="#1C1B1F"
+            app:navigationIcon="@android:drawable/ic_menu_revert"
+            app:navigationIconTint="#FFFFFF"
+            app:title="Editar Apunte"
+            app:titleTextColor="#FFFFFF" />
+    </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="0dp"
@@ -41,8 +42,8 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:hint="Título del apunte"
-                app:hintTextColor="#A020F0"
                 app:boxStrokeColor="#A020F0"
+                app:hintTextColor="#A020F0"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent">
@@ -51,8 +52,8 @@
                     android:id="@+id/etTitulo"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:textColor="#FFFFFF"
-                    android:inputType="textCapSentences" />
+                    android:inputType="textCapSentences"
+                    android:textColor="#FFFFFF" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
@@ -62,8 +63,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:hint="Categoría"
-                app:hintTextColor="#A020F0"
                 app:boxStrokeColor="#A020F0"
+                app:hintTextColor="#A020F0"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/tilTitulo">
@@ -73,9 +74,9 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:inputType="none"
+                    android:popupBackground="#1C1B1F"
                     android:textColor="#FFFFFF"
-                    android:textColorHint="#BBBBBB"
-                    android:popupBackground="#1C1B1F" />
+                    android:textColorHint="#BBBBBB" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
@@ -85,8 +86,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:hint="Escribe tus apuntes aquí..."
-                app:hintTextColor="#A020F0"
                 app:boxStrokeColor="#A020F0"
+                app:hintTextColor="#A020F0"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/tilCategoria">
@@ -96,9 +97,9 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:gravity="top"
-                    android:textColor="#FFFFFF"
                     android:inputType="textMultiLine"
-                    android:minLines="12" />
+                    android:minLines="12"
+                    android:textColor="#FFFFFF" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <ProgressBar
