@@ -3,32 +3,31 @@ package es.iescarrillo.aprendeaprueba.adapters;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.firebase.database.FirebaseDatabase;
+import com.google.android.material.card.MaterialCardView;
 
 import java.util.List;
 
 import es.iescarrillo.aprendeaprueba.R;
 import es.iescarrillo.aprendeaprueba.models.Resumen;
+import es.iescarrillo.aprendeaprueba.utils.GenerationStateUtils;
 
 public class ResumenAdapter extends RecyclerView.Adapter<ResumenAdapter.ResumenViewHolder> {
 
     private List<Resumen> listaResumenes;
-    private OnResumenClickListener listener; // 1. Declarar la interfaz
+    private final OnResumenClickListener listener;
 
-    // 2. Definir la interfaz para los clics
     public interface OnResumenClickListener {
         void onVerDetallesClick(Resumen resumen);
         void onEliminarClick(Resumen resumen);
     }
 
-    // 3. Actualizar el constructor para recibir el listener
     public ResumenAdapter(List<Resumen> listaResumenes, OnResumenClickListener listener) {
         this.listaResumenes = listaResumenes;
         this.listener = listener;
@@ -44,19 +43,22 @@ public class ResumenAdapter extends RecyclerView.Adapter<ResumenAdapter.ResumenV
     @Override
     public void onBindViewHolder(@NonNull ResumenViewHolder holder, int position) {
         Resumen resumen = listaResumenes.get(position);
+        boolean generando = GenerationStateUtils.isResumenGenerating(resumen);
 
-        holder.tvCategoria.setText(resumen.getCategoria());
+        holder.tvCategoria.setText(generando ? "GENERANDO" : resumen.getCategoria());
         holder.tvTitulo.setText(resumen.getTitulo());
-        holder.tvFecha.setText(resumen.getFecha()); // Si es String, no hace falta String.valueOf
+        holder.tvFecha.setText(generando ? "Generando contenido en segundo plano..." : resumen.getFechaFormateada());
+        holder.itemView.setAlpha(generando ? 0.75f : 1f);
 
-        // 4. Configurar el botón de Ver Detalles
-        holder.btnVerDetalles.setOnClickListener(v -> {
-            if (listener != null) {
-                listener.onVerDetallesClick(resumen);
+        holder.cardView.setOnClickListener(v -> {
+            if (listener == null) return;
+            if (generando) {
+                Toast.makeText(v.getContext(), "El resumen se esta generando. Espera a que termine para abrirlo.", Toast.LENGTH_LONG).show();
+                return;
             }
+            listener.onVerDetallesClick(resumen);
         });
 
-        // 5. Configurar el botón de eliminar (usando el listener para que el Fragment decida)
         holder.btnEliminar.setOnClickListener(v -> {
             if (listener != null) {
                 listener.onEliminarClick(resumen);
@@ -69,9 +71,15 @@ public class ResumenAdapter extends RecyclerView.Adapter<ResumenAdapter.ResumenV
         return listaResumenes.size();
     }
 
+    public void updateList(List<Resumen> newList) {
+        this.listaResumenes = newList;
+        notifyDataSetChanged();
+    }
+
     public static class ResumenViewHolder extends RecyclerView.ViewHolder {
         TextView tvTitulo, tvFecha, tvCategoria;
-        ImageView btnEliminar, btnVerDetalles; // Añadido btnVerDetalles
+        ImageButton btnEliminar;
+        MaterialCardView cardView;
 
         public ResumenViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -79,7 +87,7 @@ public class ResumenAdapter extends RecyclerView.Adapter<ResumenAdapter.ResumenV
             tvFecha = itemView.findViewById(R.id.tvFechaResumenItem);
             tvCategoria = itemView.findViewById(R.id.tvCategoriaResumenItem);
             btnEliminar = itemView.findViewById(R.id.btnEliminarResumen);
-            btnVerDetalles = itemView.findViewById(R.id.btnVerDetalles); // Inicializado
+            cardView = (MaterialCardView) itemView;
         }
     }
 }

@@ -3,8 +3,7 @@ package es.iescarrillo.aprendeaprueba.api;
 import java.util.concurrent.TimeUnit;
 
 import es.iescarrillo.aprendeaprueba.services.ApunteService;
-import es.iescarrillo.aprendeaprueba.services.ImgBBService;
-import es.iescarrillo.aprendeaprueba.services.ResumenService; // Importa el nuevo servicio
+import es.iescarrillo.aprendeaprueba.services.ResumenService;
 import es.iescarrillo.aprendeaprueba.services.TestService;
 import okhttp3.OkHttpClient;
 import retrofit2.Retrofit;
@@ -18,8 +17,8 @@ public class RetrofitClient {
     public static Retrofit getClient(String baseUrl) {
         OkHttpClient okHttpClient = new OkHttpClient.Builder()
                 .connectTimeout(60, TimeUnit.SECONDS)
-                .readTimeout(60, TimeUnit.SECONDS)
-                .writeTimeout(60, TimeUnit.SECONDS)
+                .readTimeout(90, TimeUnit.SECONDS)
+                .writeTimeout(90, TimeUnit.SECONDS)
                 .build();
 
         return new Retrofit.Builder()
@@ -36,10 +35,6 @@ public class RetrofitClient {
 
     public static ApunteService getApunteService() {
         return getClient(BASE_URL).create(ApunteService.class);
-    }
-
-    public static ImgBBService getImgBBService() {
-        return getClient("https://api.imgbb.com/").create(ImgBBService.class);
     }
 
     public static TestService getTestService() {

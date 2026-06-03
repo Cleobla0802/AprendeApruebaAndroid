@@ -1,127 +1,133 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/gl_start"
-        android:layout_width="wrap_content"
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appBarLayout"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.08" />
+        app:layout_constraintTop_toTopOf="parent">
+    </com.google.android.material.appbar.AppBarLayout>
 
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/gl_end"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.92" />
-
-    <TextView
-        android:id="@+id/tvTituloPantalla"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
-        android:text="Editar Resumen"
-        android:textColor="#FFFFFF"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        app:layout_constraintStart_toStartOf="@id/gl_start"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/layoutTitulo"
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:hint="Título del resumen"
-        android:textColorHint="#AAAAAA"
-        app:boxStrokeColor="#BB86FC"
-        app:hintTextColor="#BB86FC"
-        app:layout_constraintEnd_toEndOf="@id/gl_end"
-        app:layout_constraintStart_toStartOf="@id/gl_start"
-        app:layout_constraintTop_toBottomOf="@id/tvTituloPantalla">
-
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/etTituloDetalle"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:inputType="textCapSentences"
-            android:textColor="#FFFFFF" />
-    </com.google.android.material.textfield.TextInputLayout>
-
-    <TextView
-        android:id="@+id/tvLabelCategoriaDetalle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="Categoría:"
-        android:textColor="#BB86FC"
-        android:textStyle="bold"
-        app:layout_constraintStart_toStartOf="@id/gl_start"
-        app:layout_constraintTop_toBottomOf="@id/layoutTitulo" />
-
-    <Spinner
-        android:id="@+id/spinnerCategoriaDetalle"
-        android:layout_width="0dp"
-        android:layout_height="48dp"
-        android:layout_marginTop="8dp"
-        app:layout_constraintEnd_toEndOf="@id/gl_end"
-        app:layout_constraintStart_toStartOf="@id/gl_start"
-        app:layout_constraintTop_toBottomOf="@id/tvLabelCategoriaDetalle" />
-
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/layoutContenido"
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+    <androidx.core.widget.NestedScrollView
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginBottom="16dp"
-        android:hint="Contenido del resumen"
-        android:textColorHint="#AAAAAA"
-        app:boxStrokeColor="#BB86FC"
-        app:hintTextColor="#BB86FC"
-        app:layout_constraintBottom_toTopOf="@id/btnGuardarCambios"
-        app:layout_constraintEnd_toEndOf="@id/gl_end"
-        app:layout_constraintStart_toStartOf="@id/gl_start"
-        app:layout_constraintTop_toBottomOf="@id/spinnerCategoriaDetalle">
-
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/etContenidoDetalle"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:gravity="top"
-            android:inputType="textMultiLine"
-            android:scrollbars="vertical"
-            android:textColor="#FFFFFF" />
-    </com.google.android.material.textfield.TextInputLayout>
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnGuardarCambios"
-        android:layout_width="0dp"
-        android:layout_height="55dp"
-        android:layout_marginBottom="16dp"
-        android:backgroundTint="#BB86FC"
-        android:text="Guardar Cambios"
-        android:textAllCaps="false"
-        android:textSize="16sp"
-        app:cornerRadius="12dp"
-        app:layout_constraintBottom_toTopOf="@id/btnVolverDetalle"
-        app:layout_constraintEnd_toEndOf="@id/gl_end"
-        app:layout_constraintStart_toStartOf="@id/gl_start" />
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnVolverDetalle"
-        style="@style/Widget.MaterialComponents.Button.TextButton"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="32dp"
-        android:text="Cancelar y Volver"
-        android:textColor="#AAAAAA"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="@id/gl_end"
-        app:layout_constraintStart_toStartOf="@id/gl_start" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/appBarLayout">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="20dp">
+
+            <TextView
+                android:id="@+id/tvTituloPantalla"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Editar Resumen"
+                android:textColor="#FFFFFF"
+                android:textSize="24sp"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/layoutTitulo"
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:hint="Título del resumen"
+                app:boxStrokeColor="#A020F0"
+                app:hintTextColor="#A020F0"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tvTituloPantalla">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etTituloDetalle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="textCapSentences"
+                    android:textColor="#FFFFFF" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilCategoria"
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:hint="Categoría"
+                app:boxStrokeColor="#A020F0"
+                app:hintTextColor="#A020F0"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/layoutTitulo">
+
+                <AutoCompleteTextView
+                    android:id="@+id/spinnerCategoriaDetalle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="none"
+                    android:popupBackground="#1C1B1F"
+                    android:textColor="#FFFFFF"
+                    android:textColorHint="#BBBBBB" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/layoutContenido"
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:hint="Escribe tu resumen aquí..."
+                app:boxStrokeColor="#A020F0"
+                app:hintTextColor="#A020F0"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tilCategoria">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etContenidoDetalle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="top"
+                    android:inputType="textMultiLine"
+                    android:minLines="12"
+                    android:textColor="#FFFFFF" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <ProgressBar
+                android:id="@+id/pbCargando"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="32dp"
+                android:visibility="gone"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/layoutContenido" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.core.widget.NestedScrollView>
+
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+        android:id="@+id/fabGuardarCambios"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="24dp"
+        android:text="Guardar Cambios"
+        android:textColor="#FFFFFF"
+        app:backgroundTint="#A020F0"
+        app:icon="@android:drawable/ic_menu_save"
+        app:iconTint="#FFFFFF"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

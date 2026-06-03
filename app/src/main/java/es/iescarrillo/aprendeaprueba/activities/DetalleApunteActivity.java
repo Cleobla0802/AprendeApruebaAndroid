@@ -60,7 +60,7 @@ public class DetalleApunteActivity extends AppCompatActivity {
                     Toast.makeText(this, "Apunte actualizado", Toast.LENGTH_SHORT).show();
                     finish(); // Volver atrás para ver la lista actualizada
                 })
-                .addOnFailureListener(e -> Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                .addOnFailureListener(e -> Toast.makeText(this, "No se pudo actualizar el apunte", Toast.LENGTH_SHORT).show());
     }
 
     private void borrarApunte() {

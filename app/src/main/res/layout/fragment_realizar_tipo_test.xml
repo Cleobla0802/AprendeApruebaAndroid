@@ -1,33 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
-
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/gl_start"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.08" />
-
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/gl_end"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.92" />
+    android:layout_height="match_parent"
+    android:padding="20dp">
 
     <TextView
         android:id="@+id/tvTituloTest"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
         android:textColor="#FFFFFF"
         android:textSize="20sp"
         android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="@id/gl_end"
-        app:layout_constraintStart_toStartOf="@id/gl_start"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
@@ -35,93 +22,165 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        android:textColor="#AAAAAA"
+        android:textColor="#D0D0D0"
         android:textSize="13sp"
-        app:layout_constraintStart_toStartOf="@id/gl_start"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tvTituloTest" />
+
+    <ProgressBar
+        android:id="@+id/progressBar"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="0dp"
+        android:layout_height="8dp"
+        android:layout_marginTop="12dp"
+        android:progressTint="#A020F0"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvContadorPreguntas" />
 
     <TextView
         android:id="@+id/tvEnunciado"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
+        android:layout_marginTop="20dp"
         android:textColor="#FFFFFF"
         android:textSize="16sp"
-        app:layout_constraintEnd_toEndOf="@id/gl_end"
-        app:layout_constraintStart_toStartOf="@id/gl_start"
-        app:layout_constraintTop_toBottomOf="@id/tvContadorPreguntas" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/progressBar" />
 
-    <RadioGroup
-        android:id="@+id/radioGroupOpciones"
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardOpcionA"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:orientation="vertical"
-        app:layout_constraintEnd_toEndOf="@id/gl_end"
-        app:layout_constraintStart_toStartOf="@id/gl_start"
+        android:layout_marginTop="18dp"
+        app:cardBackgroundColor="#1E1B2E"
+        app:cardCornerRadius="12dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tvEnunciado">
 
-        <RadioButton
+        <TextView
             android:id="@+id/opcionA"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:buttonTint="#BB86FC"
-            android:paddingStart="8dp"
+            android:padding="14dp"
             android:textColor="#FFFFFF" />
+    </com.google.android.material.card.MaterialCardView>
 
-        <RadioButton
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardOpcionB"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        app:cardBackgroundColor="#1E1B2E"
+        app:cardCornerRadius="12dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/cardOpcionA">
+
+        <TextView
             android:id="@+id/opcionB"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:buttonTint="#BB86FC"
-            android:paddingStart="8dp"
+            android:padding="14dp"
             android:textColor="#FFFFFF" />
+    </com.google.android.material.card.MaterialCardView>
 
-        <RadioButton
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardOpcionC"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        app:cardBackgroundColor="#1E1B2E"
+        app:cardCornerRadius="12dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/cardOpcionB">
+
+        <TextView
             android:id="@+id/opcionC"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:buttonTint="#BB86FC"
-            android:paddingStart="8dp"
+            android:padding="14dp"
             android:textColor="#FFFFFF" />
+    </com.google.android.material.card.MaterialCardView>
 
-        <RadioButton
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardOpcionD"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        app:cardBackgroundColor="#1E1B2E"
+        app:cardCornerRadius="12dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/cardOpcionC">
+
+        <TextView
             android:id="@+id/opcionD"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:buttonTint="#BB86FC"
-            android:paddingStart="8dp"
+            android:padding="14dp"
             android:textColor="#FFFFFF" />
+    </com.google.android.material.card.MaterialCardView>
 
-    </RadioGroup>
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnAnterior"
+        android:layout_width="0dp"
+        android:layout_height="52dp"
+        android:layout_marginEnd="8dp"
+        android:text="Anterior"
+        android:textAllCaps="false"
+        app:layout_constraintBottom_toTopOf="@id/btnCancelarTest"
+        app:layout_constraintEnd_toStartOf="@id/btnSaltar"
+        app:layout_constraintHorizontal_chainStyle="spread"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnSaltar"
+        android:layout_width="0dp"
+        android:layout_height="52dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:text="Omitir"
+        android:textAllCaps="false"
+        app:layout_constraintBottom_toTopOf="@id/btnCancelarTest"
+        app:layout_constraintEnd_toStartOf="@id/btnSiguiente"
+        app:layout_constraintStart_toEndOf="@id/btnAnterior" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnSiguiente"
         android:layout_width="0dp"
-        android:layout_height="55dp"
-        android:layout_marginBottom="16dp"
-        android:backgroundTint="#BB86FC"
-        android:text="Siguiente"
+        android:layout_height="52dp"
+        android:layout_marginStart="8dp"
+        android:backgroundTint="#A020F0"
+        android:text="Continuar"
         android:textAllCaps="false"
-        android:textSize="16sp"
-        app:cornerRadius="12dp"
         app:layout_constraintBottom_toTopOf="@id/btnCancelarTest"
-        app:layout_constraintEnd_toEndOf="@id/gl_end"
-        app:layout_constraintStart_toStartOf="@id/gl_start" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/btnSaltar" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnFinalizarTest"
+        android:layout_width="0dp"
+        android:layout_height="52dp"
+        android:backgroundTint="#A020F0"
+        android:text="Finalizar"
+        android:textAllCaps="false"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@id/btnCancelarTest"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnCancelarTest"
         style="@style/Widget.MaterialComponents.Button.TextButton"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="32dp"
-        android:text="Cancelar"
-        android:textColor="#AAAAAA"
+        android:text="Salir"
+        android:textColor="#D0D0D0"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="@id/gl_end"
-        app:layout_constraintStart_toStartOf="@id/gl_start" />
-
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>

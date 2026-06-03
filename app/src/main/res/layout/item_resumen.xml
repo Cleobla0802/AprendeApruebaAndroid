@@ -1,17 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/cardResumen"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginHorizontal="16dp"
-    android:layout_marginVertical="8dp"
-    app:cardBackgroundColor="#1E1E1E"
-    app:cardCornerRadius="16dp"
+    android:layout_margin="8dp"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?attr/selectableItemBackground"
+    app:cardBackgroundColor="#1C1B1F"
+    app:cardCornerRadius="12dp"
     app:cardElevation="4dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:minHeight="104dp"
         android:padding="16dp">
 
         <TextView
@@ -20,62 +25,48 @@
             android:layout_height="wrap_content"
             android:ellipsize="end"
             android:maxLines="1"
-            android:text="Título del Resumen"
+            android:text="Titulo"
             android:textColor="#FFFFFF"
-            android:textSize="16sp"
+            android:textSize="18sp"
             android:textStyle="bold"
-            app:layout_constraintEnd_toStartOf="@id/btnVerDetalles"
+            app:layout_constraintEnd_toStartOf="@id/btnEliminarResumen"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <TextView
-            android:id="@+id/tvCategoriaResumenItem"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="2dp"
-            android:text="Matemáticas"
-            android:textColor="#BB86FC"
-            android:textSize="13sp"
-            android:textStyle="bold"
-            app:layout_constraintEnd_toStartOf="@id/btnVerDetalles"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tvTituloResumenItem" />
+        <ImageButton
+            android:id="@+id/btnEliminarResumen"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@android:drawable/ic_menu_delete"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:tint="#FF6666" />
 
         <TextView
             android:id="@+id/tvFechaResumenItem"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="2dp"
-            android:text="23/10/2025"
-            android:textColor="#AAAAAA"
-            android:textSize="12sp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/btnVerDetalles"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tvCategoriaResumenItem" />
-
-        <ImageView
-            android:id="@+id/btnVerDetalles"
-            android:layout_width="28dp"
-            android:layout_height="28dp"
-            android:layout_marginEnd="8dp"
-            android:padding="4dp"
-            android:src="@android:drawable/ic_menu_view"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/btnEliminarResumen"
-            app:layout_constraintTop_toTopOf="parent"
-            app:tint="#BB86FC" />
-
-        <ImageView
-            android:id="@+id/btnEliminarResumen"
-            android:layout_width="28dp"
-            android:layout_height="28dp"
-            android:padding="4dp"
-            android:src="@android:drawable/ic_menu_delete"
-            app:layout_constraintBottom_toBottomOf="parent"
+            android:layout_marginTop="4dp"
+            android:ellipsize="end"
+            android:maxLines="2"
+            android:text="Fecha"
+            android:textColor="#D6D6D6"
+            android:textSize="14sp"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:tint="#CF6679" />
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvTituloResumenItem" />
 
+        <TextView
+            android:id="@+id/tvCategoriaResumenItem"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="Categoria"
+            android:textColor="#E7D7FF"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvFechaResumenItem" />
     </androidx.constraintlayout.widget.ConstraintLayout>
-</androidx.cardview.widget.CardView>
+</com.google.android.material.card.MaterialCardView>

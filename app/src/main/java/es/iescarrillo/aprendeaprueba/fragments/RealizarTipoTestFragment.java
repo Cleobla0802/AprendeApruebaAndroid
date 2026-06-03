@@ -1,21 +1,24 @@
 package es.iescarrillo.aprendeaprueba.fragments;
 
+import android.app.AlertDialog;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.RadioButton;
-import android.widget.RadioGroup;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.card.MaterialCardView;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import es.iescarrillo.aprendeaprueba.R;
 import es.iescarrillo.aprendeaprueba.models.Pregunta;
 import es.iescarrillo.aprendeaprueba.models.Test;
@@ -23,15 +26,20 @@ import es.iescarrillo.aprendeaprueba.models.Test;
 public class RealizarTipoTestFragment extends Fragment {
 
     private TextView tvTitulo, tvContador, tvEnunciado;
-    private RadioGroup radioGroup;
-    private RadioButton opcionA, opcionB, opcionC, opcionD;
-    private MaterialButton btnSiguiente, btnCancelar;
+    private TextView opcionA, opcionB, opcionC, opcionD;
+    private MaterialCardView cardA, cardB, cardC, cardD;
+    private MaterialButton btnAnterior, btnSaltar, btnSiguiente, btnCancelar, btnFinalizar;
+    private ProgressBar progressBar;
 
     private Test test;
     private List<Pregunta> preguntas;
     private int preguntaActual = 0;
-    private int aciertos = 0;
+    private int opcionSeleccionada = -1;
+    private int[] respuestas;
     private DatabaseReference mDatabase;
+
+    private static final int COLOR_SELECCIONADO = 0xFF2A1F4A;
+    private static final int COLOR_NORMAL = 0xFF1E1B2E;
 
     public RealizarTipoTestFragment() {}
 
@@ -44,89 +52,219 @@ public class RealizarTipoTestFragment extends Fragment {
         tvTitulo = view.findViewById(R.id.tvTituloTest);
         tvContador = view.findViewById(R.id.tvContadorPreguntas);
         tvEnunciado = view.findViewById(R.id.tvEnunciado);
-        radioGroup = view.findViewById(R.id.radioGroupOpciones);
+        progressBar = view.findViewById(R.id.progressBar);
+
+        cardA = view.findViewById(R.id.cardOpcionA);
+        cardB = view.findViewById(R.id.cardOpcionB);
+        cardC = view.findViewById(R.id.cardOpcionC);
+        cardD = view.findViewById(R.id.cardOpcionD);
+
         opcionA = view.findViewById(R.id.opcionA);
         opcionB = view.findViewById(R.id.opcionB);
         opcionC = view.findViewById(R.id.opcionC);
         opcionD = view.findViewById(R.id.opcionD);
+
+        btnAnterior = view.findViewById(R.id.btnAnterior);
+        btnSaltar = view.findViewById(R.id.btnSaltar);
         btnSiguiente = view.findViewById(R.id.btnSiguiente);
         btnCancelar = view.findViewById(R.id.btnCancelarTest);
+        btnFinalizar = view.findViewById(R.id.btnFinalizarTest);
 
         if (getArguments() != null) {
             test = (Test) getArguments().getSerializable("test_objeto");
         }
 
-        if (test == null || test.getPreguntas() == null) {
+        if (test == null || test.getPreguntas() == null || test.getPreguntas().isEmpty()) {
             Toast.makeText(getContext(), "Error al cargar el test", Toast.LENGTH_SHORT).show();
             getParentFragmentManager().popBackStack();
             return view;
         }
 
         preguntas = test.getPreguntas();
+        respuestas = new int[preguntas.size()];
+        for (int i = 0; i < respuestas.length; i++) respuestas[i] = -1;
+
         tvTitulo.setText(test.getTitulo());
         mostrarPregunta();
 
-        btnSiguiente.setOnClickListener(v -> {
-            if (radioGroup.getCheckedRadioButtonId() == -1) {
-                Toast.makeText(getContext(), "Selecciona una opción", Toast.LENGTH_SHORT).show();
-                return;
+        cardA.setOnClickListener(v -> seleccionarOpcion(0));
+        cardB.setOnClickListener(v -> seleccionarOpcion(1));
+        cardC.setOnClickListener(v -> seleccionarOpcion(2));
+        cardD.setOnClickListener(v -> seleccionarOpcion(3));
+
+        btnSaltar.setOnClickListener(v -> omitirPregunta());
+
+        btnAnterior.setOnClickListener(v -> {
+            if (preguntaActual > 0) {
+                irAPregunta(preguntaActual - 1);
             }
-            comprobarRespuesta();
         });
 
-        btnCancelar.setOnClickListener(v -> getParentFragmentManager().popBackStack());
+        btnSiguiente.setOnClickListener(v -> continuar());
+        btnFinalizar.setOnClickListener(v -> intentarFinalizar());
+
+        btnCancelar.setOnClickListener(v -> confirmarSalida());
 
         return view;
     }
 
+    private void continuar() {
+        if (opcionSeleccionada == -1) {
+            Toast.makeText(getContext(), "Elige una respuesta o pulsa Omitir.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        respuestas[preguntaActual] = opcionSeleccionada;
+        if (preguntaActual < preguntas.size() - 1) {
+            irAPregunta(preguntaActual + 1);
+        } else {
+            intentarFinalizar();
+        }
+    }
+
+    private void seleccionarOpcion(int index) {
+        opcionSeleccionada = index;
+        respuestas[preguntaActual] = index;
+        actualizarEstadoVisual();
+    }
+
+    private void omitirPregunta() {
+        int siguientePendiente = buscarSiguienteSinResponder(preguntaActual + 1);
+        if (siguientePendiente != -1) {
+            irAPregunta(siguientePendiente);
+            return;
+        }
+
+        if (preguntaActual < preguntas.size() - 1) {
+            irAPregunta(preguntaActual + 1);
+            return;
+        }
+
+        intentarFinalizar();
+    }
+
+    private void irAPregunta(int index) {
+        preguntaActual = index;
+        mostrarPregunta();
+    }
+
+    private void actualizarEstadoVisual() {
+        MaterialCardView[] cards = {cardA, cardB, cardC, cardD};
+        for (int i = 0; i < cards.length; i++) {
+            cards[i].setCardBackgroundColor(i == opcionSeleccionada ? COLOR_SELECCIONADO : COLOR_NORMAL);
+            cards[i].setCardElevation(i == opcionSeleccionada ? 8f : 2f);
+        }
+
+        int respondidas = contarRespondidas();
+        tvContador.setText("Pregunta " + (preguntaActual + 1) + " de " + preguntas.size()
+                + " - " + respondidas + "/" + preguntas.size() + " respondidas");
+        progressBar.setProgress((respondidas * 100) / preguntas.size());
+
+        btnAnterior.setVisibility(preguntaActual > 0 ? View.VISIBLE : View.GONE);
+        btnFinalizar.setVisibility(View.GONE);
+        btnSiguiente.setText(preguntaActual == preguntas.size() - 1 ? "Terminar" : "Continuar");
+    }
+
     private void mostrarPregunta() {
         Pregunta p = preguntas.get(preguntaActual);
-        tvContador.setText("Pregunta " + (preguntaActual + 1) + " de " + preguntas.size());
         tvEnunciado.setText(p.getEnunciado());
-        radioGroup.clearCheck();
 
-        List<String> opciones = p.getOpciones();
+        List<String> opciones = p.getOpciones() != null ? p.getOpciones() : Collections.emptyList();
         opcionA.setText(opciones.size() > 0 ? opciones.get(0) : "");
         opcionB.setText(opciones.size() > 1 ? opciones.get(1) : "");
         opcionC.setText(opciones.size() > 2 ? opciones.get(2) : "");
         opcionD.setText(opciones.size() > 3 ? opciones.get(3) : "");
 
-        boolean esUltima = preguntaActual == preguntas.size() - 1;
-        btnSiguiente.setText(esUltima ? "Finalizar" : "Siguiente");
+        opcionSeleccionada = respuestas[preguntaActual];
+        actualizarEstadoVisual();
     }
 
-    private void comprobarRespuesta() {
-        Pregunta p = preguntas.get(preguntaActual);
-        int seleccionado = -1;
-
-        int checkedId = radioGroup.getCheckedRadioButtonId();
-        if (checkedId == R.id.opcionA) seleccionado = 0;
-        else if (checkedId == R.id.opcionB) seleccionado = 1;
-        else if (checkedId == R.id.opcionC) seleccionado = 2;
-        else if (checkedId == R.id.opcionD) seleccionado = 3;
-
-        if (seleccionado == p.getRespuestaCorrecta()) aciertos++;
-
-        preguntaActual++;
-
-        if (preguntaActual < preguntas.size()) {
-            mostrarPregunta();
-        } else {
-            finalizarTest();
+    private int buscarPrimeroSinResponder() {
+        for (int i = 0; i < respuestas.length; i++) {
+            if (respuestas[i] == -1) return i;
         }
+        return -1;
+    }
+
+    private int buscarSiguienteSinResponder(int start) {
+        for (int i = start; i < respuestas.length; i++) {
+            if (respuestas[i] == -1) return i;
+        }
+        return -1;
+    }
+
+    private int contarRespondidas() {
+        int count = 0;
+        for (int r : respuestas) if (r != -1) count++;
+        return count;
+    }
+
+    private int contarSinResponder() {
+        int count = 0;
+        for (int r : respuestas) if (r == -1) count++;
+        return count;
+    }
+
+    private void intentarFinalizar() {
+        int sinResponder = contarSinResponder();
+        if (sinResponder > 0) {
+            new AlertDialog.Builder(requireContext())
+                    .setTitle("Preguntas pendientes")
+                    .setMessage("Te quedan " + sinResponder + " pregunta(s) sin responder. Puedes revisarlas o terminar ahora y contarlas como incorrectas.")
+                    .setPositiveButton("Revisar", (dialog, which) -> {
+                        int primeroSinResponder = buscarPrimeroSinResponder();
+                        if (primeroSinResponder != -1) {
+                            irAPregunta(primeroSinResponder);
+                        }
+                    })
+                    .setNegativeButton("Terminar", (dialog, which) -> finalizarTest())
+                    .setNeutralButton("Cancelar", null)
+                    .show();
+            return;
+        }
+
+        new AlertDialog.Builder(requireContext())
+                .setTitle("Finalizar test")
+                .setMessage("Vas a guardar la nota de este intento.")
+                .setPositiveButton("Finalizar", (dialog, which) -> finalizarTest())
+                .setNegativeButton("Seguir revisando", null)
+                .show();
+    }
+
+    private void confirmarSalida() {
+        if (contarRespondidas() == 0) {
+            getParentFragmentManager().popBackStack();
+            return;
+        }
+
+        new AlertDialog.Builder(requireContext())
+                .setTitle("Salir del test")
+                .setMessage("Si sales ahora no se guardara la nota de este intento.")
+                .setPositiveButton("Salir", (dialog, which) -> getParentFragmentManager().popBackStack())
+                .setNegativeButton("Continuar", null)
+                .show();
     }
 
     private void finalizarTest() {
+        int aciertos = 0;
+        for (int i = 0; i < preguntas.size(); i++) {
+            if (respuestas[i] == preguntas.get(i).getRespuestaCorrecta()) {
+                aciertos++;
+            }
+        }
+        final int aciertosFinal = aciertos;
         int nota = (aciertos * 100) / preguntas.size();
+        double calificacion = Math.round(((double) aciertos / preguntas.size()) * 100.0) / 10.0;
 
         Map<String, Object> actualizacion = new HashMap<>();
         actualizacion.put("completado", true);
         actualizacion.put("ultimaNota", nota);
+        actualizacion.put("calificacion", calificacion);
 
         mDatabase.child(test.getId()).updateChildren(actualizacion)
                 .addOnSuccessListener(a -> {
                     Toast.makeText(getContext(),
-                            "Test completado: " + aciertos + "/" + preguntas.size() + " (" + nota + "%)",
+                            "Test completado: " + aciertosFinal + "/" + preguntas.size() + " (" + nota + "%)",
                             Toast.LENGTH_LONG).show();
                     getParentFragmentManager().popBackStack();
                 })

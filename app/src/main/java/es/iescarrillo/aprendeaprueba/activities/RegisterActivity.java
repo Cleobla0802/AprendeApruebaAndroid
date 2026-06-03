@@ -2,7 +2,6 @@ package es.iescarrillo.aprendeaprueba.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -23,13 +22,17 @@ import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import es.iescarrillo.aprendeaprueba.R;
 
 public class RegisterActivity extends AppCompatActivity {
 
     private static final String TAG = "REGISTER_GOOGLE";
-    private EditText etEmail, etPassword;
+    private EditText etEmail, etPassword, etConfirmPassword;
     private Button btnRegister, btnGoogle;
     private TextView tvLogin;
     private FirebaseAuth mAuth;
@@ -43,8 +46,9 @@ public class RegisterActivity extends AppCompatActivity {
         mAuth = FirebaseAuth.getInstance();
         credentialManager = CredentialManager.create(this);
 
-        etEmail = findViewById(R.id.etEmail); // Asegúrate de que los IDs coincidan con tu XML
+        etEmail = findViewById(R.id.etEmail);
         etPassword = findViewById(R.id.etPassword);
+        etConfirmPassword = findViewById(R.id.etConfirmPassword);
         btnRegister = findViewById(R.id.btnRegister);
         btnGoogle = findViewById(R.id.btnGoogle);
         tvLogin = findViewById(R.id.tvLogin);
@@ -57,9 +61,15 @@ public class RegisterActivity extends AppCompatActivity {
     private void registerWithEmail() {
         String email = etEmail.getText().toString().trim();
         String pass = etPassword.getText().toString().trim();
+        String confirmPass = etConfirmPassword.getText().toString().trim();
 
-        if (email.isEmpty() || pass.isEmpty()) {
+        if (email.isEmpty() || pass.isEmpty() || confirmPass.isEmpty()) {
             Toast.makeText(this, "Rellena todos los campos", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (!pass.equals(confirmPass)) {
+            Toast.makeText(this, "Las contraseñas no coinciden", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -93,7 +103,6 @@ public class RegisterActivity extends AppCompatActivity {
 
                     @Override
                     public void onError(@NonNull GetCredentialException e) {
-                        Log.e(TAG, "Error: " + e.getMessage());
                     }
                 });
     }
@@ -106,7 +115,6 @@ public class RegisterActivity extends AppCompatActivity {
                 GoogleIdTokenCredential googleIdTokenCredential = GoogleIdTokenCredential.createFrom(customCredential.getData());
                 firebaseAuthWithGoogle(googleIdTokenCredential.getIdToken());
             } catch (Exception e) {
-                Log.e(TAG, "Error al procesar token", e);
             }
         }
     }
@@ -116,11 +124,41 @@ public class RegisterActivity extends AppCompatActivity {
         mAuth.signInWithCredential(credential)
                 .addOnCompleteListener(this, task -> {
                     if (task.isSuccessful()) {
-                        startActivity(new Intent(RegisterActivity.this, HomeActivity.class));
-                        finish();
+                        FirebaseUser user = mAuth.getCurrentUser();
+                        if (user != null) {
+                            comprobarUsuarioEnBaseDeDatos(user);
+                        } else {
+                            irAHome();
+                        }
                     } else {
                         Toast.makeText(this, "Error de autenticación", Toast.LENGTH_SHORT).show();
                     }
                 });
+    }
+
+    private void comprobarUsuarioEnBaseDeDatos(FirebaseUser user) {
+        String uid = user.getUid();
+        FirebaseDatabase.getInstance().getReference("persons")
+                .child(uid)
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        if (snapshot.exists()) {
+                            irAHome();
+                        } else {
+                            irAHome();
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                        irAHome();
+                    }
+                });
+    }
+
+    private void irAHome() {
+        startActivity(new Intent(RegisterActivity.this, HomeActivity.class));
+        finish();
     }
 }

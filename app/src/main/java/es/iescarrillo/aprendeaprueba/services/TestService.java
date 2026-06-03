@@ -8,5 +8,5 @@ import retrofit2.http.POST;
 
 public interface TestService {
     @POST("api/tests/generar")
-    Call<Test> generarTest(@Body Map<String, String> body);
+    Call<Test> generarTest(@Body Map<String, Object> body);
 }

@@ -1,19 +1,10 @@
 <resources>
     <string name="app_name">Aprende &amp; Aprueba</string>
 
-    <string name="navigation_drawer_open">Abrir menú</string>
-    <string name="navigation_drawer_close">Cerrar menú</string>
-
-    <!-- Bottom Navigation Items -->
-    <string name="pruebas">Pruebas</string>
-    <string name="apuntes">Apuntes</string>
-    <string name="resumenes">Resúmenes</string>
-
-    <!-- Content Descriptions -->
-    <string name="desc_pruebas">Navegar a Pruebas</string>
-    <string name="desc_apuntes">Navegar a Apuntes</string>
-    <string name="desc_resumenes">Navegar a Resúmenes</string>
-    <string name="title_activity_main">MainActivity</string>
+    <string name="navigation_drawer_open">Abrir menu</string>
+    <string name="navigation_drawer_close">Cerrar menu</string>
 
     <string name="default_web_client_id">210746317476-j3vlb6ni1ue9j2459dgeu2akb5joie5n.apps.googleusercontent.com</string>
+
+    <string name="appbar_scrolling_view_behavior">com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior</string>
 </resources>

@@ -1,6 +1,8 @@
 package es.iescarrillo.aprendeaprueba.fragments;
 
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -8,8 +10,10 @@ import android.widget.ArrayAdapter;
 import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+
 import com.google.android.material.button.MaterialButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
@@ -17,16 +21,21 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import es.iescarrillo.aprendeaprueba.R;
 import es.iescarrillo.aprendeaprueba.api.RetrofitClient;
 import es.iescarrillo.aprendeaprueba.models.Apuntes;
+import es.iescarrillo.aprendeaprueba.models.Pregunta;
 import es.iescarrillo.aprendeaprueba.models.Resumen;
 import es.iescarrillo.aprendeaprueba.models.Test;
 import es.iescarrillo.aprendeaprueba.services.TestService;
+import es.iescarrillo.aprendeaprueba.utils.GenerationStateUtils;
+import es.iescarrillo.aprendeaprueba.utils.IaTextUtils;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -34,15 +43,19 @@ import retrofit2.Response;
 public class CrearTipoTestFragment extends Fragment {
 
     private RadioGroup radioGroupFuente;
-    private Spinner spinnerFuente;
+    private Spinner spinnerFuente, spinnerPreguntas;
     private MaterialButton btnGenerar, btnCancelar;
     private DatabaseReference mDatabase;
     private FirebaseAuth mAuth;
 
-    private List<Apuntes> listaApuntes = new ArrayList<>();
-    private List<Resumen> listaResumenes = new ArrayList<>();
+    private final List<Apuntes> listaApuntes = new ArrayList<>();
+    private final List<Resumen> listaResumenes = new ArrayList<>();
     private ArrayAdapter<String> adapterSpinner;
-    private List<String> titulosSpinner = new ArrayList<>();
+    private final List<String> titulosSpinner = new ArrayList<>();
+
+    private static final int LIMITE_CONTENIDO_TEST = 7000;
+    private final String[] opcionesPreguntas = {"5 preguntas", "10 preguntas", "15 preguntas"};
+    private final int[] valoresPreguntas = {5, 10, 15};
 
     public CrearTipoTestFragment() {}
 
@@ -55,12 +68,18 @@ public class CrearTipoTestFragment extends Fragment {
 
         radioGroupFuente = view.findViewById(R.id.radioGroupFuente);
         spinnerFuente = view.findViewById(R.id.spinnerFuente);
+        spinnerPreguntas = view.findViewById(R.id.spinnerPreguntas);
         btnGenerar = view.findViewById(R.id.btnGenerarTest);
         btnCancelar = view.findViewById(R.id.btnCancelarCrear);
 
         adapterSpinner = new ArrayAdapter<>(requireContext(), R.layout.spinner_item_blanco, titulosSpinner);
-        adapterSpinner.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        adapterSpinner.setDropDownViewResource(R.layout.spinner_item_blanco);
         spinnerFuente.setAdapter(adapterSpinner);
+
+        ArrayAdapter<String> adapterPreguntas = new ArrayAdapter<>(requireContext(), R.layout.spinner_item_blanco, opcionesPreguntas);
+        adapterPreguntas.setDropDownViewResource(R.layout.spinner_item_blanco);
+        spinnerPreguntas.setAdapter(adapterPreguntas);
+        spinnerPreguntas.setSelection(1);
 
         cargarApuntes();
 
@@ -132,77 +151,122 @@ public class CrearTipoTestFragment extends Fragment {
         }
 
         int pos = spinnerFuente.getSelectedItemPosition();
+        int cantidadPreguntas = valoresPreguntas[spinnerPreguntas.getSelectedItemPosition()];
         boolean esApunte = radioGroupFuente.getCheckedRadioButtonId() == R.id.radioApunte;
 
-        String contenido, titulo, categoria;
+        String contenido, titulo, categoria, materialId;
+        String materialTipo = esApunte ? "apuntes" : "resumenes";
 
         if (esApunte) {
             Apuntes apunte = listaApuntes.get(pos);
+            if (GenerationStateUtils.isApunteGenerating(apunte)) {
+                Toast.makeText(getContext(), "Ese apunte aun se esta digitalizando. Espera a que termine.", Toast.LENGTH_LONG).show();
+                return;
+            }
             contenido = apunte.getContenido();
             titulo = apunte.getTitulo();
             categoria = apunte.getCategoria();
+            materialId = apunte.getId();
         } else {
             Resumen resumen = listaResumenes.get(pos);
-            contenido = resumen.getContenido();
+            if (GenerationStateUtils.isResumenGenerating(resumen)) {
+                Toast.makeText(getContext(), "Ese resumen aun se esta generando. Espera a que termine.", Toast.LENGTH_LONG).show();
+                return;
+            }
+            contenido = resumen.getResumenTexto();
             titulo = resumen.getTitulo();
             categoria = resumen.getCategoria();
+            materialId = resumen.getId();
         }
 
+        String contenidoProcesado = IaTextUtils.prepararContenidoParaIA(contenido, LIMITE_CONTENIDO_TEST);
+        if (contenidoProcesado.trim().isEmpty()) {
+            Toast.makeText(getContext(), "El material seleccionado no tiene contenido suficiente", Toast.LENGTH_LONG).show();
+            return;
+        }
+        String contenidoHash = IaTextUtils.crearHashContenido(contenidoProcesado);
+
+        if (mAuth.getCurrentUser() == null) return;
         String uid = mAuth.getCurrentUser().getUid();
 
-        Map<String, String> body = new HashMap<>();
-        body.put("contenido", contenido);
+        DatabaseReference testsRef = FirebaseDatabase.getInstance().getReference("tests");
+        String nuevoId = testsRef.push().getKey();
+        if (nuevoId == null) return;
+
+        Map<String, Object> testInicial = new HashMap<>();
+        testInicial.put("id", nuevoId);
+        testInicial.put("userId", uid);
+        testInicial.put("titulo", "Test de " + titulo);
+        testInicial.put("categoria", categoria);
+        testInicial.put("preguntas", new ArrayList<>());
+        testInicial.put("estado", "generando");
+        testInicial.put("completado", false);
+        testInicial.put("ultimaNota", 0);
+        testInicial.put("cantidadPreguntas", cantidadPreguntas);
+        testInicial.put("materialTipo", materialTipo);
+        testInicial.put("materialId", materialId != null ? materialId : "");
+        testInicial.put("contenidoHash", contenidoHash);
+        testInicial.put("fecha", System.currentTimeMillis());
+
+        testsRef.child(nuevoId).setValue(testInicial).addOnSuccessListener(a -> {
+            btnGenerar.setEnabled(false);
+            Toast.makeText(getContext(), "Test creado. Las preguntas se estan generando en segundo plano...", Toast.LENGTH_SHORT).show();
+            new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                if (isAdded()) getParentFragmentManager().popBackStack();
+            }, 700);
+        });
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("contenido", contenidoProcesado);
         body.put("userId", uid);
         body.put("titulo", titulo);
         body.put("categoria", categoria);
+        body.put("cantidadPreguntas", cantidadPreguntas);
 
-        btnGenerar.setEnabled(false);
-        btnGenerar.setText("Generando...");
-
+        String testId = nuevoId;
         TestService service = RetrofitClient.getTestService();
         service.generarTest(body).enqueue(new Callback<Test>() {
             @Override
             public void onResponse(@NonNull Call<Test> call, @NonNull Response<Test> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     Test test = response.body();
-                    if (test.getPreguntas() == null || test.getPreguntas().isEmpty()) {
-                        Toast.makeText(getContext(), "La IA no pudo generar preguntas, inténtalo de nuevo", Toast.LENGTH_SHORT).show();
-                        resetBoton();
-                        return;
+                    if (test.getPreguntas() != null && !test.getPreguntas().isEmpty()) {
+                        List<Pregunta> preguntas = test.getPreguntas().size() > cantidadPreguntas
+                                ? test.getPreguntas().subList(0, cantidadPreguntas)
+                                : test.getPreguntas();
+                        Map<String, Object> update = new HashMap<>();
+                        update.put("preguntas", preguntas);
+                        update.put("estado", "listo");
+                        actualizarTestSiExiste(testsRef, testId, update);
+                    } else {
+                        Map<String, Object> errorUpdate = new HashMap<>();
+                        errorUpdate.put("estado", "error");
+                        errorUpdate.put("descripcion", "No se pudieron generar preguntas. Vuelve a intentarlo.");
+                        actualizarTestSiExiste(testsRef, testId, errorUpdate);
                     }
-                    test.setUserId(uid);
-                    test.setFecha(System.currentTimeMillis());
-                    test.setCompletado(false);
-                    test.setUltimaNota(0);
-
-                    DatabaseReference testsRef = FirebaseDatabase.getInstance().getReference("tests");
-                    String nuevoId = testsRef.push().getKey();
-                    test.setId(nuevoId);
-                    testsRef.child(nuevoId).setValue(test)
-                            .addOnSuccessListener(a -> {
-                                Toast.makeText(getContext(), "¡Test creado!", Toast.LENGTH_SHORT).show();
-                                getParentFragmentManager().popBackStack();
-                            })
-                            .addOnFailureListener(e -> {
-                                Toast.makeText(getContext(), "Error al guardar", Toast.LENGTH_SHORT).show();
-                                resetBoton();
-                            });
                 } else {
-                    Toast.makeText(getContext(), "Error al generar el test", Toast.LENGTH_SHORT).show();
-                    resetBoton();
+                    Map<String, Object> errorUpdate = new HashMap<>();
+                    errorUpdate.put("estado", "error");
+                    errorUpdate.put("descripcion", "Error al generar preguntas. Vuelve a intentarlo.");
+                    actualizarTestSiExiste(testsRef, testId, errorUpdate);
                 }
             }
 
             @Override
             public void onFailure(@NonNull Call<Test> call, @NonNull Throwable t) {
-                Toast.makeText(getContext(), "Error de conexión: " + t.getMessage(), Toast.LENGTH_SHORT).show();
-                resetBoton();
+                Map<String, Object> errorUpdate = new HashMap<>();
+                errorUpdate.put("estado", "error");
+                errorUpdate.put("descripcion", "Error de conexion. Edita el contenido manualmente.");
+                actualizarTestSiExiste(testsRef, testId, errorUpdate);
             }
         });
     }
 
-    private void resetBoton() {
-        btnGenerar.setEnabled(true);
-        btnGenerar.setText("Generar Test");
+    private void actualizarTestSiExiste(DatabaseReference testsRef, String testId, Map<String, Object> updates) {
+        testsRef.child(testId).get().addOnSuccessListener(snapshot -> {
+            if (snapshot.exists()) {
+                testsRef.child(testId).updateChildren(updates);
+            }
+        });
     }
 }

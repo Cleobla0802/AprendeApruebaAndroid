@@ -2,27 +2,31 @@ package es.iescarrillo.aprendeaprueba.fragments;
 
 import android.app.AlertDialog;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Toast;
-
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
+import com.google.android.material.chip.Chip;
+import com.google.android.material.chip.ChipGroup;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
-
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
-
+import java.util.Set;
 import es.iescarrillo.aprendeaprueba.R;
 import es.iescarrillo.aprendeaprueba.adapters.ResumenAdapter;
 import es.iescarrillo.aprendeaprueba.models.Resumen;
@@ -34,34 +38,34 @@ public class ResumenesFragment extends Fragment {
     private DatabaseReference mDatabase;
     private FirebaseAuth mAuth;
     private ResumenAdapter adapter;
-    private List<Resumen> listaResumenes;
+    private ChipGroup chipGroup;
+    private List<Resumen> listaResumenes = new ArrayList<>();
+    private String textoFiltro = "";
+    private String categoriaFiltro = "Todos";
+    private Query resumenesQuery;
+    private ValueEventListener resumenesListener;
 
-    public ResumenesFragment() {
-        // Constructor vacío requerido
-    }
+    public ResumenesFragment() {}
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_resumenes, container, false);
 
-        // Inicializar Firebase
         mAuth = FirebaseAuth.getInstance();
         mDatabase = FirebaseDatabase.getInstance().getReference("resumenes");
 
-        // Referencias de la UI
-        rvResumenes = view.findViewById(R.id.rvResumenes);
-        btnIrACrearResumen = view.findViewById(R.id.btnIrACrearResumen);
+        rvResumenes = view.findViewById(R.id.rvItems);
+        btnIrACrearResumen = view.findViewById(R.id.btnActionPrincipal);
+        EditText etSearch = view.findViewById(R.id.etSearch);
+        chipGroup = view.findViewById(R.id.chipGroupCategorias);
 
         rvResumenes.setLayoutManager(new LinearLayoutManager(getContext()));
-        listaResumenes = new ArrayList<>();
 
         adapter = new ResumenAdapter(listaResumenes, new ResumenAdapter.OnResumenClickListener() {
             @Override
             public void onVerDetallesClick(Resumen resumen) {
-                // Aquí abriremos el fragmento de edición/detalle
                 abrirDetalleResumen(resumen);
             }
-
             @Override
             public void onEliminarClick(Resumen resumen) {
                 mostrarDialogoConfirmacion(resumen);
@@ -70,7 +74,23 @@ public class ResumenesFragment extends Fragment {
 
         rvResumenes.setAdapter(adapter);
 
-        // Configurar navegación al fragmento de creación
+        etSearch.addTextChangedListener(new TextWatcher() {
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+                textoFiltro = s.toString().toLowerCase().trim();
+                aplicarFiltros();
+            }
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void afterTextChanged(Editable s) {}
+        });
+
+        chipGroup.setOnCheckedStateChangeListener((group, checkedIds) -> {
+            if (!checkedIds.isEmpty()) {
+                Chip chip = group.findViewById(checkedIds.get(0));
+                if (chip != null) categoriaFiltro = chip.getText().toString();
+            }
+            aplicarFiltros();
+        });
+
         btnIrACrearResumen.setOnClickListener(v -> {
             getParentFragmentManager().beginTransaction()
                     .replace(R.id.fragment_container, new CrearResumenFragment())
@@ -79,36 +99,83 @@ public class ResumenesFragment extends Fragment {
         });
 
         cargarResumenesDesdeFirebase();
-
         return view;
+    }
+
+    private void actualizarChips() {
+        if (!isAdded() || getContext() == null) return;
+        Set<String> categorias = new LinkedHashSet<>();
+        for (Resumen r : listaResumenes) {
+            if (r.getCategoria() != null && !r.getCategoria().isEmpty())
+                categorias.add(r.getCategoria());
+        }
+
+        int childCount = chipGroup.getChildCount();
+        if (childCount > 1) chipGroup.removeViews(1, childCount - 1);
+
+        for (String cat : categorias) {
+            Chip chip = new Chip(requireContext());
+            chip.setText(cat);
+            chip.setCheckable(true);
+            chip.setCheckedIconVisible(false);
+            chip.setTextColor(0xFFFFFFFF);
+            chip.setChipBackgroundColorResource(R.color.chip_state_color);
+            chipGroup.addView(chip);
+        }
+
+        if (chipGroup.getCheckedChipId() == View.NO_ID)
+            chipGroup.check(R.id.chipAll);
+    }
+
+    private void aplicarFiltros() {
+        if (!isAdded() || getContext() == null) return;
+        List<Resumen> filtrada = new ArrayList<>();
+        for (Resumen r : listaResumenes) {
+            boolean matchTexto = r.getTitulo() != null && r.getTitulo().toLowerCase().contains(textoFiltro);
+            boolean matchCat = categoriaFiltro.equals("Todos") ||
+                    (r.getCategoria() != null && r.getCategoria().equalsIgnoreCase(categoriaFiltro));
+            if (matchTexto && matchCat) filtrada.add(r);
+        }
+        adapter.updateList(filtrada);
     }
 
     private void cargarResumenesDesdeFirebase() {
         if (mAuth.getCurrentUser() == null) return;
-
         String uid = mAuth.getCurrentUser().getUid();
 
-        mDatabase.orderByChild("userId").equalTo(uid)
-                .addValueEventListener(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-                        listaResumenes.clear();
-                        for (DataSnapshot postSnapshot : snapshot.getChildren()) {
-                            Resumen resumen = postSnapshot.getValue(Resumen.class);
-                            if (resumen != null) {
-                                listaResumenes.add(resumen);
-                            }
-                        }
-                        adapter.notifyDataSetChanged();
-                    }
-
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError error) {
-                        if (getContext() != null) {
-                            Toast.makeText(getContext(), "Error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                });
+        resumenesQuery = mDatabase.orderByChild("userId").equalTo(uid);
+        resumenesListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (!isAdded() || getContext() == null) return;
+                listaResumenes.clear();
+                for (DataSnapshot postSnapshot : snapshot.getChildren()) {
+                    try {
+                        Resumen resumen = new Resumen();
+                        resumen.setId(postSnapshot.getKey());
+                        resumen.setUserId(postSnapshot.child("userId").getValue(String.class));
+                        resumen.setTitulo(postSnapshot.child("titulo").getValue(String.class));
+                        resumen.setDescripcion(postSnapshot.child("descripcion").getValue(String.class));
+                        resumen.setResumenTexto(postSnapshot.child("resumenTexto").getValue(String.class));
+                        resumen.setEstado(postSnapshot.child("estado").getValue(String.class));
+                        resumen.setCategoria(postSnapshot.child("categoria").getValue(String.class));
+                        resumen.setIdApunteOriginal(postSnapshot.child("idApunteOriginal").getValue(String.class));
+                        resumen.setContenidoHash(postSnapshot.child("contenidoHash").getValue(String.class));
+                        Object fechaRaw = postSnapshot.child("fecha").getValue();
+                        resumen.setFecha(fechaRaw instanceof Long ? (Long) fechaRaw : 0L);
+                        listaResumenes.add(resumen);
+                    } catch (Exception ignored) {}
+                }
+                actualizarChips();
+                aplicarFiltros();
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                if (!isAdded() || getContext() == null) return;
+                Toast.makeText(getContext(), "Error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        };
+        resumenesQuery.addValueEventListener(resumenesListener);
     }
 
     private void mostrarDialogoConfirmacion(Resumen resumen) {
@@ -122,31 +189,34 @@ public class ResumenesFragment extends Fragment {
 
     private void eliminarResumen(Resumen resumen) {
         mDatabase.child(resumen.getId()).removeValue()
-                .addOnSuccessListener(aVoid -> {
-                    if (getContext() != null) {
-                        Toast.makeText(getContext(), "Resumen eliminado", Toast.LENGTH_SHORT).show();
-                    }
+                .addOnSuccessListener(a -> {
+                    if (!isAdded() || getContext() == null) return;
+                    Toast.makeText(getContext(), "Resumen eliminado", Toast.LENGTH_SHORT).show();
                 })
                 .addOnFailureListener(e -> {
-                    if (getContext() != null) {
-                        Toast.makeText(getContext(), "Error al eliminar", Toast.LENGTH_SHORT).show();
-                    }
+                    if (!isAdded() || getContext() == null) return;
+                    Toast.makeText(getContext(), "Error al eliminar", Toast.LENGTH_SHORT).show();
                 });
     }
 
     private void abrirDetalleResumen(Resumen resumen) {
-        // 1. Creamos el Bundle para pasar el objeto
         Bundle bundle = new Bundle();
         bundle.putSerializable("resumen_objeto", resumen);
-
-        // 2. Creamos la instancia del nuevo fragmento
         DetalleResumenFragment detalleFragment = new DetalleResumenFragment();
         detalleFragment.setArguments(bundle);
-
-        // 3. Realizamos la transición
         getParentFragmentManager().beginTransaction()
                 .replace(R.id.fragment_container, detalleFragment)
-                .addToBackStack(null) // Para que al dar atrás vuelva a la lista
+                .addToBackStack(null)
                 .commit();
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        if (resumenesQuery != null && resumenesListener != null) {
+            resumenesQuery.removeEventListener(resumenesListener);
+        }
+        resumenesQuery = null;
+        resumenesListener = null;
     }
 }

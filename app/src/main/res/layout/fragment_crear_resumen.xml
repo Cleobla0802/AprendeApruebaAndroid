@@ -25,29 +25,18 @@
             android:orientation="vertical"
             app:layout_constraintGuide_percent="0.95" />
 
-        <ImageView
-            android:id="@+id/ivIconHeader"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:layout_marginTop="16dp"
-            android:src="@drawable/iconoapuntes"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:tint="#A020F0" />
-
         <TextView
             android:id="@+id/tvTitleMain"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="16dp"
             android:fontFamily="sans-serif-black"
-            android:text="Generar Resumen IA"
+            android:text="Crear Resumen"
             android:textColor="@android:color/white"
             android:textSize="24sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/ivIconHeader" />
+            app:layout_constraintTop_toTopOf="parent" />
 
         <com.google.android.material.card.MaterialCardView
             android:layout_width="0dp"
@@ -71,7 +60,7 @@
                     android:id="@+id/lblSeleccion"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="📖 Selecciona tu apunte"
+                    android:text="Selecciona tu apunte"
                     android:textColor="@android:color/white"
                     android:textStyle="bold"
                     app:layout_constraintStart_toStartOf="parent"
@@ -94,7 +83,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="20dp"
-                    android:text="✎ Título para el resumen"
+                    android:text="Titulo para el resumen"
                     android:textColor="@android:color/white"
                     android:textStyle="bold"
                     app:layout_constraintStart_toStartOf="parent"
@@ -118,7 +107,7 @@
                         android:layout_height="wrap_content"
                         android:hint="Ej: Resumen de Anatomía..."
                         android:textColor="@android:color/white"
-                        android:textColorHint="#555555" />
+                        android:textColorHint="#C7C7C7" />
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <TextView
@@ -126,7 +115,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
-                    android:text="📂 Categoría"
+                    android:text="Categoria"
                     android:textColor="@android:color/white"
                     android:textStyle="bold"
                     app:layout_constraintStart_toStartOf="parent"
@@ -149,7 +138,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
-                    android:text="📝 Descripción o notas adicionales"
+                    android:text="Descripcion o notas adicionales"
                     android:textColor="@android:color/white"
                     android:textStyle="bold"
                     app:layout_constraintStart_toStartOf="parent"
@@ -180,7 +169,7 @@
                         android:maxLength="150"
                         android:minLines="3"
                         android:textColor="@android:color/white"
-                        android:textColorHint="#555555" />
+                        android:textColorHint="#C7C7C7" />
 
                 </com.google.android.material.textfield.TextInputLayout>
 

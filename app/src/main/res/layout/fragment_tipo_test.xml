@@ -2,58 +2,88 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
-
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/gl_start"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.05" />
-
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/gl_end"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.95" />
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true">
 
     <TextView
-        android:id="@+id/tvTituloPruebas"
+        android:id="@+id/tvHeaderTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="12dp"
         android:text="Mis Pruebas"
         android:textColor="#FFFFFF"
-        android:textSize="24sp"
+        android:textSize="28sp"
         android:textStyle="bold"
-        app:layout_constraintStart_toStartOf="@id/gl_start"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rvPruebas"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginBottom="16dp"
-        app:layout_constraintBottom_toTopOf="@id/btnCrearPrueba"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tvTituloPruebas" />
-
-    <Button
-        android:id="@+id/btnCrearPrueba"
+    <EditText
+        android:id="@+id/etSearch"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
-        android:backgroundTint="#A020F0"
-        android:elevation="4dp"
+        android:layout_marginHorizontal="20dp"
+        android:layout_marginTop="12dp"
+        android:background="@drawable/bg_search_input"
+        android:hint="Buscar por titulo..."
         android:padding="12dp"
-        android:text="Crear Prueba"
+        android:textColor="#FFFFFF"
+        android:textColorHint="#C7C7C7"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvHeaderTitle" />
+
+    <HorizontalScrollView
+        android:id="@+id/svCategories"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:paddingHorizontal="16dp"
+        android:scrollbars="none"
+        app:layout_constraintTop_toBottomOf="@id/etSearch">
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/chipGroupCategorias"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:selectionRequired="true"
+            app:singleSelection="true">
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipAll"
+                style="@style/Widget.MaterialComponents.Chip.Choice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="true"
+                android:text="Todos"
+                android:textColor="@android:color/white"
+                app:chipBackgroundColor="@drawable/chip_state_color" />
+        </com.google.android.material.chip.ChipGroup>
+    </HorizontalScrollView>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvItems"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="8dp"
+        android:padding="8dp"
+        app:layout_constraintBottom_toTopOf="@id/btnActionPrincipal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/svCategories" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnActionPrincipal"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_margin="20dp"
+        android:backgroundTint="#A020F0"
+        android:padding="14dp"
+        android:text="CREAR NUEVO"
         android:textColor="@android:color/white"
+        android:textStyle="bold"
         app:cornerRadius="24dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="@id/gl_end"
-        app:layout_constraintStart_toStartOf="@id/gl_start" />
-
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>

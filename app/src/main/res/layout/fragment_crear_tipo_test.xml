@@ -1,44 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
-
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/gl_start"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.08" />
-
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/gl_end"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.92" />
+    android:layout_height="match_parent"
+    android:padding="20dp">
 
     <TextView
         android:id="@+id/tvTituloCrear"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
         android:text="Crear Prueba"
         android:textColor="#FFFFFF"
         android:textSize="24sp"
         android:textStyle="bold"
-        app:layout_constraintStart_toStartOf="@id/gl_start"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/tvLabelFuente"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:text="Generar test a partir de:"
-        android:textColor="#BB86FC"
+        android:layout_marginTop="20dp"
+        android:text="Generar test a partir de"
+        android:textColor="#E7D7FF"
         android:textStyle="bold"
-        app:layout_constraintStart_toStartOf="@id/gl_start"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tvTituloCrear" />
 
     <RadioGroup
@@ -46,64 +33,104 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
+        android:background="@drawable/bg_search_input"
         android:orientation="horizontal"
-        app:layout_constraintEnd_toEndOf="@id/gl_end"
-        app:layout_constraintStart_toStartOf="@id/gl_start"
+        android:padding="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tvLabelFuente">
 
         <RadioButton
             android:id="@+id/radioApunte"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:buttonTint="#BB86FC"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:buttonTint="#E7D7FF"
             android:checked="true"
+            android:gravity="center"
             android:text="Apunte"
             android:textColor="#FFFFFF" />
 
         <RadioButton
             android:id="@+id/radioResumen"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="24dp"
-            android:buttonTint="#BB86FC"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:buttonTint="#E7D7FF"
+            android:gravity="center"
             android:text="Resumen"
             android:textColor="#FFFFFF" />
-
     </RadioGroup>
+
+    <TextView
+        android:id="@+id/tvLabelMaterial"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="18dp"
+        android:text="Material"
+        android:textColor="#FFFFFF"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/radioGroupFuente" />
 
     <Spinner
         android:id="@+id/spinnerFuente"
         android:layout_width="0dp"
-        android:layout_height="48dp"
-        android:layout_marginTop="16dp"
-        app:layout_constraintEnd_toEndOf="@id/gl_end"
-        app:layout_constraintStart_toStartOf="@id/gl_start"
-        app:layout_constraintTop_toBottomOf="@id/radioGroupFuente" />
+        android:layout_height="52dp"
+        android:layout_marginTop="8dp"
+        android:backgroundTint="#E7D7FF"
+        android:popupBackground="#1C1B1F"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvLabelMaterial" />
+
+    <TextView
+        android:id="@+id/tvLabelPreguntas"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="18dp"
+        android:text="Numero de preguntas"
+        android:textColor="#FFFFFF"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/spinnerFuente" />
+
+    <Spinner
+        android:id="@+id/spinnerPreguntas"
+        android:layout_width="0dp"
+        android:layout_height="52dp"
+        android:layout_marginTop="8dp"
+        android:backgroundTint="#E7D7FF"
+        android:popupBackground="#1C1B1F"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvLabelPreguntas" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnGenerarTest"
         android:layout_width="0dp"
         android:layout_height="55dp"
-        android:layout_marginBottom="16dp"
-        android:backgroundTint="#BB86FC"
-        android:text="Generar Test"
+        android:layout_marginBottom="8dp"
+        android:backgroundTint="#A020F0"
+        android:text="Generar test"
         android:textAllCaps="false"
+        android:textColor="@android:color/white"
         android:textSize="16sp"
         app:cornerRadius="12dp"
         app:layout_constraintBottom_toTopOf="@id/btnCancelarCrear"
-        app:layout_constraintEnd_toEndOf="@id/gl_end"
-        app:layout_constraintStart_toStartOf="@id/gl_start" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnCancelarCrear"
         style="@style/Widget.MaterialComponents.Button.TextButton"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="32dp"
         android:text="Cancelar"
-        android:textColor="#AAAAAA"
+        android:textColor="#D0D0D0"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="@id/gl_end"
-        app:layout_constraintStart_toStartOf="@id/gl_start" />
-
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/cardApunte"
+    android:id="@+id/cardTipoTest"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_margin="8dp"
@@ -15,7 +16,7 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:minHeight="104dp"
+        android:minHeight="116dp"
         android:padding="16dp">
 
         <TextView
@@ -49,7 +50,7 @@
             android:layout_marginTop="4dp"
             android:ellipsize="end"
             android:maxLines="2"
-            android:text="Descripcion del contenido..."
+            android:text="Descripcion..."
             android:textColor="#D6D6D6"
             android:textSize="14sp"
             app:layout_constraintEnd_toEndOf="parent"
@@ -58,14 +59,47 @@
 
         <TextView
             android:id="@+id/tvCategoriaTag"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
+            android:ellipsize="end"
+            android:maxLines="1"
             android:text="Categoria"
             android:textColor="#E7D7FF"
             android:textSize="12sp"
             android:textStyle="bold"
+            app:layout_constraintEnd_toStartOf="@id/tvNota"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tvDescripcion" />
+
+        <TextView
+            android:id="@+id/tvNota"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_nota_badge"
+            android:paddingHorizontal="10dp"
+            android:paddingVertical="4dp"
+            android:textColor="#FFFFFF"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:visibility="gone"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/tvCategoriaTag" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnRealizar"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:layout_marginTop="8dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:minWidth="96dp"
+            android:minHeight="0dp"
+            android:text="Realizar"
+            android:textAllCaps="false"
+            app:backgroundTint="#A020F0"
+            app:cornerRadius="18dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvCategoriaTag" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </com.google.android.material.card.MaterialCardView>

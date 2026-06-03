@@ -1,19 +1,22 @@
 package es.iescarrillo.aprendeaprueba.fragments;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.EditText;
-import android.widget.Spinner;
+import android.widget.AutoCompleteTextView;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
-import com.google.android.material.button.MaterialButton;
+import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
+import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
@@ -25,82 +28,92 @@ import es.iescarrillo.aprendeaprueba.models.Resumen;
 
 public class DetalleResumenFragment extends Fragment {
 
-    private EditText etTitulo, etContenido;
-    private MaterialButton btnGuardarCambios, btnVolver;
+    private TextInputEditText etTitulo, etContenido;
+    private AutoCompleteTextView spinnerCategoria;
+    private ExtendedFloatingActionButton fabGuardar;
+    private ProgressBar pbCargando;
     private Resumen resumen;
-    private DatabaseReference mDatabase;
 
-    private Spinner spinnerCategoria;
-
-    public DetalleResumenFragment() {
-
-    }
+    public DetalleResumenFragment() {}
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_detalles_resumen, container, false);
+        return inflater.inflate(R.layout.fragment_detalles_resumen, container, false);
+    }
 
-        // 1. Inicializar Firebase
-        mDatabase = FirebaseDatabase.getInstance().getReference("resumenes");
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
 
-        // 2. Inicializar Vistas (Asegúrate de que estos IDs coincidan con tu XML)
         etTitulo = view.findViewById(R.id.etTituloDetalle);
         etContenido = view.findViewById(R.id.etContenidoDetalle);
-        btnGuardarCambios = view.findViewById(R.id.btnGuardarCambios);
-        btnVolver = view.findViewById(R.id.btnVolverDetalle);
         spinnerCategoria = view.findViewById(R.id.spinnerCategoriaDetalle);
+        fabGuardar = view.findViewById(R.id.fabGuardarCambios);
+        pbCargando = view.findViewById(R.id.pbCargando);
 
-        String[] categorias = {"Matemáticas", "Tecnologia", "Historia", "Ciencias", "Inglés"};
+        String[] categorias = {"Matemáticas", "Historia", "Ciencias", "Ingles", "Tecnologia"};
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(requireContext(), R.layout.item_dropdown_blanco, categorias) {
+            @NonNull
+            @Override
+            public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
+                View v = super.getView(position, convertView, parent);
+                ((TextView) v.findViewById(android.R.id.text1)).setTextColor(Color.WHITE);
+                return v;
+            }
 
-        ArrayAdapter<String> adapterSpinner = new ArrayAdapter<>(requireContext(), R.layout.spinner_item_blanco, categorias);
-        adapterSpinner.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinnerCategoria.setAdapter(adapterSpinner);
+            @Override
+            public View getDropDownView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
+                View v = super.getDropDownView(position, convertView, parent);
+                ((TextView) v.findViewById(android.R.id.text1)).setTextColor(Color.WHITE);
+                v.setBackgroundColor(Color.parseColor("#2B2B2B"));
+                return v;
+            }
+        };
 
-        // 3. Recuperar el objeto Resumen enviado desde el Adapter/Fragment anterior
+        spinnerCategoria.setAdapter(adapter);
+
         if (getArguments() != null) {
             resumen = (Resumen) getArguments().getSerializable("resumen_objeto");
-
             if (resumen != null) {
-                // Rellenar los campos con los datos actuales
                 etTitulo.setText(resumen.getTitulo());
-                etContenido.setText(resumen.getContenido());
+                etContenido.setText(resumen.getResumenTexto());
+                spinnerCategoria.setText(resumen.getCategoria(), false);
             }
         }
 
-        // 4. Configurar botones
-        btnGuardarCambios.setOnClickListener(v -> actualizarResumen());
-
-        btnVolver.setOnClickListener(v -> getParentFragmentManager().popBackStack());
-
-        return view;
+        fabGuardar.setOnClickListener(v -> actualizarResumen());
     }
 
     private void actualizarResumen() {
         String nuevoTitulo = etTitulo.getText().toString().trim();
         String nuevoContenido = etContenido.getText().toString().trim();
+        String nuevaCat = spinnerCategoria.getText().toString();
 
-        if (nuevoTitulo.isEmpty() || nuevoContenido.isEmpty()) {
-            Toast.makeText(getContext(), "Los campos no pueden estar vacíos", Toast.LENGTH_SHORT).show();
+        if (nuevoTitulo.isEmpty() || nuevoContenido.isEmpty() || nuevaCat.isEmpty()) {
+            Toast.makeText(getContext(), "Completa todos los campos", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // Crear un mapa con los campos a actualizar
-        Map<String, Object> actualizaciones = new HashMap<>();
-        actualizaciones.put("titulo", nuevoTitulo);
-        actualizaciones.put("contenido", nuevoContenido);
-        actualizaciones.put("categoria", spinnerCategoria.getSelectedItem().toString());
+        pbCargando.setVisibility(View.VISIBLE);
+        fabGuardar.setEnabled(false);
 
-        // Actualizar en Firebase usando el ID del resumen
-        if (resumen != null && resumen.getId() != null) {
-            mDatabase.child(resumen.getId()).updateChildren(actualizaciones)
-                    .addOnSuccessListener(aVoid -> {
-                        Toast.makeText(getContext(), "¡Cambios guardados!", Toast.LENGTH_SHORT).show();
-                        // Volver a la lista después de guardar
-                        getParentFragmentManager().popBackStack();
-                    })
-                    .addOnFailureListener(e -> {
-                        Toast.makeText(getContext(), "Error al actualizar: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                    });
-        }
+        DatabaseReference mDatabase = FirebaseDatabase.getInstance().getReference("resumenes").child(resumen.getId());
+
+        Map<String, Object> updates = new HashMap<>();
+        updates.put("titulo", nuevoTitulo);
+        updates.put("resumenTexto", nuevoContenido);
+        updates.put("categoria", nuevaCat);
+
+        mDatabase.updateChildren(updates).addOnCompleteListener(task -> {
+            if (!isAdded()) return;
+            pbCargando.setVisibility(View.GONE);
+            fabGuardar.setEnabled(true);
+            if (task.isSuccessful()) {
+                Toast.makeText(getContext(), "Resumen actualizado", Toast.LENGTH_SHORT).show();
+                getParentFragmentManager().popBackStack();
+            } else {
+                Toast.makeText(getContext(), "Error en la actualización", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }

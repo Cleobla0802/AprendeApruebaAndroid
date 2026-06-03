@@ -49,7 +49,7 @@ public class DetalleApunteFragment extends Fragment {
         pbCargando = view.findViewById(R.id.pbCargando);
 
         // 3. Configurar el adaptador (usando un layout estándar para evitar fondos negros)
-        String[] categorias = {"Matemáticas", "Historia", "Ciencias", "Ingles","Historia" ,"Tecnologia"};
+        String[] categorias = {"Matemáticas", "Historia", "Ciencias", "Ingles", "Tecnologia"};
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(requireContext(), R.layout.item_dropdown_blanco, categorias) {
             @NonNull
             @Override

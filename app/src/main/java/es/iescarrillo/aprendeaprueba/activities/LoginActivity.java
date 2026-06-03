@@ -4,7 +4,6 @@ import static android.content.ContentValues.TAG;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -42,7 +41,7 @@ public class LoginActivity extends AppCompatActivity {
 
     private Button btnLogin, btnGoogle;
     private EditText etEmail, etPassword;
-    private TextView tvRegister;
+    private TextView tvRegister, tvForgotPassword;
     private FirebaseAuth instanceAuth;
 
     // Variables de configuración de Google SignIn
@@ -71,6 +70,12 @@ public class LoginActivity extends AppCompatActivity {
         btnLogin = findViewById(R.id.btnLogin);
         tvRegister = findViewById(R.id.tvRegister);
         btnGoogle = findViewById(R.id.btnGoogle);
+
+        tvForgotPassword = findViewById(R.id.tvForgotPassword);
+
+        tvForgotPassword.setOnClickListener(v -> {
+            startActivity(new Intent(LoginActivity.this, RecuperarPasswordActivity.class));
+        });
 
         instanceAuth = FirebaseAuth.getInstance();
 
@@ -136,7 +141,6 @@ public class LoginActivity extends AppCompatActivity {
                     firebaseAuthWithGoogle(account.getIdToken());
                 }
             } catch (ApiException e) {
-                Log.e(TAG, "Error Google SignIn: " + e.getStatusCode());
                 Toast.makeText(this, "Fallo al conectar con Google", Toast.LENGTH_SHORT).show();
             }
         }
@@ -182,13 +186,12 @@ public class LoginActivity extends AppCompatActivity {
 
                     @Override
                     public void onCancelled(@NonNull DatabaseError error) {
-                        Log.e(TAG, "Error Database: " + error.getMessage());
                     }
                 });
     }
 
     private void irAMain() {
-        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+        Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
         startActivity(intent);
         finish();
     }

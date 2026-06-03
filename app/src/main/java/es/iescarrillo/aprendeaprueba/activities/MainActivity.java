@@ -22,6 +22,14 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        FirebaseAuth mAuth = FirebaseAuth.getInstance();
+        if (mAuth.getCurrentUser() != null) {
+            startActivity(new Intent(MainActivity.this, HomeActivity.class));
+            finish();
+            return;
+        }
+
         setContentView(R.layout.activity_main);
 
         imgLogo = findViewById(R.id.logo);
@@ -34,7 +42,6 @@ public class MainActivity extends AppCompatActivity {
                 .load(logoUrl)
                 .into(imgLogo);
 
-        FirebaseAuth mAuth = FirebaseAuth.getInstance();
         btnStart = findViewById(R.id.button_start);
 
         btnStart.setOnClickListener(v -> {

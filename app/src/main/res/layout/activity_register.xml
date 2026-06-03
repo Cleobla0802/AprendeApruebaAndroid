@@ -143,8 +143,9 @@
         app:layout_constraintStart_toStartOf="@id/gl_start"
         app:layout_constraintTop_toBottomOf="@id/tilConfirmPassword" />
 
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/btnGoogle"
+        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"

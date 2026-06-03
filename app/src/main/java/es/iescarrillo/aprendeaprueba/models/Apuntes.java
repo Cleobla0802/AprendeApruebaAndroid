@@ -11,6 +11,7 @@ public class Apuntes {
     private String titulo;
     private String descripcion;
     private String contenido;
+    private String estado;
 
     @SerializedName("userId")
     private String userId;
@@ -20,11 +21,9 @@ public class Apuntes {
     @SerializedName("url")
     private String imagenUrl;
 
-    // 1. Constructor vacío (Obligatorio para Firebase)
     public Apuntes() {
     }
 
-    // 2. Constructor de 4 parámetros (El que te pide el error para actualizar/crear localmente)
     public Apuntes(String id, String titulo, String descripcion, String contenido) {
         this.id = id;
         this.titulo = titulo;
@@ -32,7 +31,6 @@ public class Apuntes {
         this.contenido = contenido;
     }
 
-    // 3. Constructor completo (Para cuando tengas todos los datos)
     public Apuntes(String id, String titulo, String descripcion, String contenido, String userId, String categoria, String imagenUrl) {
         this.id = id;
         this.titulo = titulo;
@@ -56,6 +54,9 @@ public class Apuntes {
 
     public String getContenido() { return contenido; }
     public void setContenido(String contenido) { this.contenido = contenido; }
+
+    public String getEstado() { return estado; }
+    public void setEstado(String estado) { this.estado = estado; }
 
     @PropertyName("userId")
     public String getUserId() { return userId; }

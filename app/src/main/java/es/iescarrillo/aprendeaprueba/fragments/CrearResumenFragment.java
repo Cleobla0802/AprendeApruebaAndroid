@@ -1,21 +1,20 @@
 package es.iescarrillo.aprendeaprueba.fragments;
 
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.google.android.material.button.MaterialButton;
-import com.google.android.material.progressindicator.CircularProgressIndicator;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -31,6 +30,7 @@ import java.util.Map;
 import es.iescarrillo.aprendeaprueba.R;
 import es.iescarrillo.aprendeaprueba.api.RetrofitClient;
 import es.iescarrillo.aprendeaprueba.models.Apuntes;
+import es.iescarrillo.aprendeaprueba.utils.GenerationStateUtils;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -41,11 +41,11 @@ public class CrearResumenFragment extends Fragment {
     private EditText etTitulo, etDescripcion;
     private MaterialButton btnGenerar;
 
-    // Listas para manejar los datos de los apuntes
-    private List<Apuntes> listaApuntesObj = new ArrayList<>();
-    private List<String> nombresApuntes = new ArrayList<>();
+    private final List<Apuntes> listaApuntesObj = new ArrayList<>();
+    private final List<String> nombresApuntes = new ArrayList<>();
 
-    private CircularProgressIndicator progressCargando;
+    private final String[] categoriasValores = {"matematicas", "ciencias", "historia", "ingles", "tecnologia"};
+    private final String[] categoriasNombres = {"Matematicas", "Ciencias", "Historia", "Ingles", "Tecnologia"};
 
     public CrearResumenFragment() {}
 
@@ -53,64 +53,44 @@ public class CrearResumenFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_crear_resumen, container, false);
 
-        // 1. Inicializar vistas
         spinnerApuntes = view.findViewById(R.id.spinnerApuntesExistentes);
         spinnerCategoria = view.findViewById(R.id.spinnerCategoriaResumen);
         etTitulo = view.findViewById(R.id.etTituloResumen);
         etDescripcion = view.findViewById(R.id.etDescripcionResumen);
         btnGenerar = view.findViewById(R.id.btnGenerarResumenIA);
-        progressCargando = view.findViewById(R.id.progressCargando);
 
-        // 2. Cargar datos
         cargarApuntesDesdeFirebase();
         configurarSpinnerCategorias();
 
-        // 3. Configurar botón
         btnGenerar.setOnClickListener(v -> {
-            if (validarCampos()) {
-                ejecutarProcesoIA();
-            }
+            if (validarCampos()) ejecutarProcesoIA();
         });
 
         return view;
     }
 
-    private void setCargando(boolean cargando) {
-        if (cargando) {
-            btnGenerar.setEnabled(false);
-            btnGenerar.setText(""); // Quitamos el texto para que solo se vea el círculo girando
-            progressCargando.setVisibility(View.VISIBLE);
-        } else {
-            btnGenerar.setEnabled(true);
-            btnGenerar.setText("Crear Resumen");
-            progressCargando.setVisibility(View.GONE);
-        }
-    }
-
     private void cargarApuntesDesdeFirebase() {
+        if (FirebaseAuth.getInstance().getCurrentUser() == null) return;
         String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
         DatabaseReference ref = FirebaseDatabase.getInstance().getReference("apuntes");
 
-        // Buscamos solo los apuntes de este usuario
         ref.orderByChild("userId").equalTo(uid).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 listaApuntesObj.clear();
                 nombresApuntes.clear();
-
                 for (DataSnapshot ds : snapshot.getChildren()) {
                     Apuntes apunte = ds.getValue(Apuntes.class);
                     if (apunte != null) {
+                        apunte.setId(ds.getKey());
                         listaApuntesObj.add(apunte);
                         nombresApuntes.add(apunte.getTitulo());
                     }
                 }
-
                 if (getContext() != null) {
                     ArrayAdapter<String> adapter = new ArrayAdapter<>(getContext(),
                             R.layout.spinner_item_blanco, nombresApuntes);
-
-                    adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                    adapter.setDropDownViewResource(R.layout.spinner_item_blanco);
                     spinnerApuntes.setAdapter(adapter);
                 }
             }
@@ -121,16 +101,16 @@ public class CrearResumenFragment extends Fragment {
     }
 
     private void configurarSpinnerCategorias() {
-        String[] categorias = {"Matemáticas", "Ciencias", "Historia", "Inglés", "Tecnología"};
-
         if (getContext() != null) {
             ArrayAdapter<String> adapter = new ArrayAdapter<>(getContext(),
-                    R.layout.spinner_item_blanco, categorias);
-
-            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-
+                    R.layout.spinner_item_blanco, categoriasNombres);
+            adapter.setDropDownViewResource(R.layout.spinner_item_blanco);
             spinnerCategoria.setAdapter(adapter);
         }
+    }
+
+    private String getCategoriaValor() {
+        return categoriasValores[spinnerCategoria.getSelectedItemPosition()];
     }
 
     private boolean validarCampos() {
@@ -142,71 +122,89 @@ public class CrearResumenFragment extends Fragment {
             return false;
         }
         if (titulo.isEmpty()) {
-            etTitulo.setError("El título es obligatorio");
+            etTitulo.setError("El titulo es obligatorio");
             return false;
         }
         if (descripcion.length() > 150) {
-            etDescripcion.setError("La descripción es demasiado larga (máx 150)");
+            etDescripcion.setError("La descripcion es demasiado larga (max 150)");
             return false;
         }
         return true;
     }
 
     private void ejecutarProcesoIA() {
-        // Obtenemos el apunte seleccionado del Spinner
         int pos = spinnerApuntes.getSelectedItemPosition();
         Apuntes seleccionado = listaApuntesObj.get(pos);
+        if (GenerationStateUtils.isApunteGenerating(seleccionado)) {
+            Toast.makeText(getContext(), "Ese apunte aun se esta digitalizando. Espera a que termine.", Toast.LENGTH_LONG).show();
+            return;
+        }
 
-        // Obtenemos los datos personalizados de los campos
-        String tituloPersonalizado = etTitulo.getText().toString();
-        String categoriaPersonalizada = spinnerCategoria.getSelectedItem().toString();
+        String titulo = etTitulo.getText().toString().trim();
+        String descripcion = etDescripcion.getText().toString().trim();
+        String categoria = getCategoriaValor();
+        if (FirebaseAuth.getInstance().getCurrentUser() == null) return;
+        String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
-        pedirResumenAlBackend(seleccionado.getContenido(), tituloPersonalizado, categoriaPersonalizada);
-    }
+        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("resumenes");
+        String id = ref.push().getKey();
+        if (id == null) return;
 
-    private void pedirResumenAlBackend(String textoApunte, String tituloNuevo, String categoriaNueva) {
-        setCargando(true); // <--- Empieza el efecto visual
+        Map<String, Object> resumenInicial = new HashMap<>();
+        resumenInicial.put("id", id);
+        resumenInicial.put("userId", uid);
+        resumenInicial.put("titulo", titulo);
+        resumenInicial.put("descripcion", descripcion);
+        resumenInicial.put("resumenTexto", GenerationStateUtils.APUNTE_GENERANDO);
+        resumenInicial.put("estado", "generando");
+        resumenInicial.put("fecha", System.currentTimeMillis());
+        resumenInicial.put("categoria", categoria);
 
+        ref.child(id).setValue(resumenInicial).addOnSuccessListener(aVoid -> {
+            btnGenerar.setEnabled(false);
+            Toast.makeText(getContext(), "Resumen creado. La IA sigue generando el contenido en segundo plano...", Toast.LENGTH_SHORT).show();
+            new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                if (isAdded()) getParentFragmentManager().popBackStack();
+            }, 700);
+        });
+
+        String resumenId = id;
         Map<String, String> payload = new HashMap<>();
-        payload.put("contenido", textoApunte);
+        payload.put("contenido", seleccionado.getContenido());
 
         RetrofitClient.getResumenService().generarResumen(payload).enqueue(new Callback<Map<String, String>>() {
             @Override
             public void onResponse(@NonNull Call<Map<String, String>> call, @NonNull Response<Map<String, String>> response) {
-                setCargando(false); // <--- Termina el efecto visual
-
+                String contenidoFinal;
                 if (response.isSuccessful() && response.body() != null) {
                     String resumenIA = response.body().get("resumen");
-                    guardarResumenEnFirebase(resumenIA, tituloNuevo, categoriaNueva);
+                    contenidoFinal = (resumenIA != null && !resumenIA.trim().isEmpty() && !resumenIA.equals("null"))
+                            ? resumenIA
+                            : "La IA no pudo generar el resumen. Edita el contenido manualmente.";
+                } else {
+                    contenidoFinal = "Error al generar con IA. Edita el contenido manualmente.";
                 }
+                String estado = contenidoFinal.startsWith("Error") || contenidoFinal.startsWith("La IA no pudo")
+                        ? "error"
+                        : "listo";
+                actualizarResumenSiExiste(ref, resumenId, contenidoFinal, estado);
             }
 
             @Override
             public void onFailure(@NonNull Call<Map<String, String>> call, @NonNull Throwable t) {
-                setCargando(false); // <--- Termina incluso si hay error
-                Toast.makeText(getContext(), "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                actualizarResumenSiExiste(ref, resumenId, "Error de conexion. Edita el contenido manualmente.", "error");
             }
         });
     }
 
-    private void guardarResumenEnFirebase(String contenido, String titulo, String categoria) {
-        String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
-        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("resumenes");
-        String id = ref.push().getKey();
+    private void actualizarResumenSiExiste(DatabaseReference ref, String resumenId, String contenido, String estado) {
+        ref.child(resumenId).get().addOnSuccessListener(snapshot -> {
+            if (!snapshot.exists()) return;
 
-        Map<String, Object> resumen = new HashMap<>();
-        resumen.put("id", id);
-        resumen.put("userId", uid);
-        resumen.put("titulo", titulo); // Usamos el título personalizado del usuario
-        resumen.put("contenido", contenido);
-        resumen.put("fecha", new java.util.Date().toString());
-        resumen.put("categoria", categoria); // Usamos la categoría personalizada
-
-        if (id != null) {
-            ref.child(id).setValue(resumen).addOnSuccessListener(aVoid -> {
-                Toast.makeText(getContext(), "¡Resumen creado con éxito!", Toast.LENGTH_SHORT).show();
-                getParentFragmentManager().popBackStack();
-            });
-        }
+            Map<String, Object> updates = new HashMap<>();
+            updates.put("resumenTexto", contenido);
+            updates.put("estado", estado);
+            ref.child(resumenId).updateChildren(updates);
+        });
     }
 }
