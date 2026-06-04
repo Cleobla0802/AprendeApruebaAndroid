@@ -15,6 +15,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "210746317476-8k092q5aibgv3nrpcbuqi4do5fgur609.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "es.iescarrillo.aprendeaprueba",
+            "certificate_hash": "8dd67f6c2d59835844cbcfb2534700d547a3044e"
+          }
+        },
+        {
           "client_id": "210746317476-j3vlb6ni1ue9j2459dgeu2akb5joie5n.apps.googleusercontent.com",
           "client_type": 3
         }

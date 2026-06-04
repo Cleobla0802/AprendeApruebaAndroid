@@ -65,7 +65,7 @@ dependencies {
     implementation(libs.material3)
 
     // Firebase (Usando el BOM para gestionar versiones automáticamente)
-    implementation(platform("com.google.firebase:firebase-bom:33.9.0")) // Actualizada a una más reciente
+    implementation(platform("com.google.firebase:firebase-bom:32.7.0"))
     implementation("com.google.firebase:firebase-analytics")
     implementation("com.google.firebase:firebase-database")
     implementation("com.google.firebase:firebase-auth")

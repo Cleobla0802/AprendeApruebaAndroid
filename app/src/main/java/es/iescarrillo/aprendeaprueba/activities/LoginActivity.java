@@ -79,6 +79,9 @@ public class LoginActivity extends AppCompatActivity {
 
         instanceAuth = FirebaseAuth.getInstance();
 
+        // Deshabilitar verificación de app para desarrollo (reCAPTCHA)
+        instanceAuth.getFirebaseAuthSettings().setAppVerificationDisabledForTesting(true);
+
         // 2. Configuración de Google SignIn
         googleSignInOptions = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken(getString(R.string.default_web_client_id))
@@ -109,7 +112,8 @@ public class LoginActivity extends AppCompatActivity {
                         if (task.isSuccessful()) {
                             irAMain();
                         } else {
-                            Toast.makeText(this, "Error: Credenciales incorrectas", Toast.LENGTH_SHORT).show();
+                            String msg = task.getException() != null ? task.getException().getMessage() : "Credenciales incorrectas";
+                            Toast.makeText(this, "Error: " + msg, Toast.LENGTH_LONG).show();
                         }
                     });
         });

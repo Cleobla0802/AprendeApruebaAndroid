@@ -44,6 +44,7 @@ public class RegisterActivity extends AppCompatActivity {
         setContentView(R.layout.activity_register);
 
         mAuth = FirebaseAuth.getInstance();
+        mAuth.getFirebaseAuthSettings().setAppVerificationDisabledForTesting(true);
         credentialManager = CredentialManager.create(this);
 
         etEmail = findViewById(R.id.etEmail);
