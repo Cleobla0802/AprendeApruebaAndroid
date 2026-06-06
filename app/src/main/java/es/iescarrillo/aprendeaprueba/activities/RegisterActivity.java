@@ -1,7 +1,9 @@
 package es.iescarrillo.aprendeaprueba.activities;
 
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -19,6 +21,7 @@ import androidx.credentials.exceptions.GetCredentialException;
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption;
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential;
 import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
@@ -132,7 +135,8 @@ public class RegisterActivity extends AppCompatActivity {
                             irAHome();
                         }
                     } else {
-                        Toast.makeText(this, "Error de autenticación", Toast.LENGTH_SHORT).show();
+                        String msg = task.getException() != null ? task.getException().getMessage() : "Error de autenticación";
+                        Toast.makeText(this, "Error: " + msg, Toast.LENGTH_LONG).show();
                     }
                 });
     }
@@ -147,7 +151,7 @@ public class RegisterActivity extends AppCompatActivity {
                         if (snapshot.exists()) {
                             irAHome();
                         } else {
-                            irAHome();
+                            mostrarDialogoPassword(user);
                         }
                     }
 
@@ -156,6 +160,54 @@ public class RegisterActivity extends AppCompatActivity {
                         irAHome();
                     }
                 });
+    }
+
+    private void mostrarDialogoPassword(FirebaseUser user) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Establecer contraseña");
+        builder.setMessage("¿Quieres poder iniciar sesión también con correo y contraseña? Establece una contraseña ahora.");
+
+        View view = getLayoutInflater().inflate(R.layout.dialog_set_password, null);
+        EditText etPass = view.findViewById(R.id.etPasswordDialog);
+        EditText etConfirm = view.findViewById(R.id.etConfirmPasswordDialog);
+        builder.setView(view);
+
+        builder.setPositiveButton("Guardar", null);
+        builder.setNegativeButton("Omitir", (dialog, which) -> irAHome());
+
+        AlertDialog dialog = builder.create();
+        dialog.setOnShowListener(d -> {
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
+                String pass = etPass.getText().toString().trim();
+                String confirm = etConfirm.getText().toString().trim();
+
+                if (pass.isEmpty() || confirm.isEmpty()) {
+                    Toast.makeText(this, "Rellena los campos", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                if (!pass.equals(confirm)) {
+                    Toast.makeText(this, "Las contraseñas no coinciden", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                if (pass.length() < 6) {
+                    Toast.makeText(this, "La contraseña debe tener al menos 6 caracteres", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                AuthCredential emailCredential = EmailAuthProvider.getCredential(user.getEmail(), pass);
+                user.linkWithCredential(emailCredential)
+                        .addOnSuccessListener(a -> {
+                            Toast.makeText(this, "Contraseña guardada. Ya puedes iniciar sesión con email.", Toast.LENGTH_LONG).show();
+                            irAHome();
+                        })
+                        .addOnFailureListener(e -> {
+                            String msg = e.getMessage() != null ? e.getMessage() : "Error al guardar la contraseña";
+                            Toast.makeText(this, "Error: " + msg, Toast.LENGTH_LONG).show();
+                        });
+            });
+        });
+
+        dialog.show();
     }
 
     private void irAHome() {

@@ -133,21 +133,8 @@
         android:text="Anterior"
         android:textAllCaps="false"
         app:layout_constraintBottom_toTopOf="@id/btnCancelarTest"
-        app:layout_constraintEnd_toStartOf="@id/btnSaltar"
-        app:layout_constraintHorizontal_chainStyle="spread"
-        app:layout_constraintStart_toStartOf="parent" />
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnSaltar"
-        android:layout_width="0dp"
-        android:layout_height="52dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginEnd="8dp"
-        android:text="Omitir"
-        android:textAllCaps="false"
-        app:layout_constraintBottom_toTopOf="@id/btnCancelarTest"
         app:layout_constraintEnd_toStartOf="@id/btnSiguiente"
-        app:layout_constraintStart_toEndOf="@id/btnAnterior" />
+        app:layout_constraintStart_toStartOf="parent" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnSiguiente"
@@ -159,7 +146,7 @@
         android:textAllCaps="false"
         app:layout_constraintBottom_toTopOf="@id/btnCancelarTest"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/btnSaltar" />
+        app:layout_constraintStart_toEndOf="@id/btnAnterior" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnFinalizarTest"

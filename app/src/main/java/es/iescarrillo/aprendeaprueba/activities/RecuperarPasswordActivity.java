@@ -29,6 +29,7 @@ public class RecuperarPasswordActivity extends AppCompatActivity {
         setContentView(R.layout.activity_recuperar_password);
 
         mAuth = FirebaseAuth.getInstance();
+        mAuth.getFirebaseAuthSettings().setAppVerificationDisabledForTesting(true);
         etEmail = findViewById(R.id.etEmailRecuperar);
         btnRecuperar = findViewById(R.id.btnRecuperar);
         tvVolver = findViewById(R.id.tvVolverLogin);
@@ -72,8 +73,9 @@ public class RecuperarPasswordActivity extends AppCompatActivity {
                                     finish();
                                 })
                                 .addOnFailureListener(e -> {
+                                    String msg = e.getMessage() != null ? e.getMessage() : "Error al enviar el correo";
                                     Toast.makeText(RecuperarPasswordActivity.this,
-                                            "Error al enviar el correo", Toast.LENGTH_SHORT).show();
+                                            "Error: " + msg, Toast.LENGTH_LONG).show();
                                 });
                     }
 
