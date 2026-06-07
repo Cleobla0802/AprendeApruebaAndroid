@@ -217,7 +217,8 @@ public class CrearTipoTestFragment extends Fragment {
         testsRef.child(nuevoId).setValue(testInicial)
             .addOnSuccessListener(a -> {
                 btnGenerar.setEnabled(false);
-                Toast.makeText(getContext(), "Test creado. Las preguntas se estan generando en segundo plano...", Toast.LENGTH_SHORT).show();
+                if (getContext() != null)
+                    Toast.makeText(getContext(), "Test creado. Las preguntas se estan generando en segundo plano...", Toast.LENGTH_SHORT).show();
                 new Handler(Looper.getMainLooper()).postDelayed(() -> {
                     if (isAdded()) getParentFragmentManager().popBackStack();
                 }, 700);

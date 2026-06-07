@@ -80,10 +80,14 @@ public class PruebasFragment extends Fragment {
                         .setPositiveButton("Eliminar", (dialog, which) ->
                                 FirebaseDatabase.getInstance().getReference("tests")
                                         .child(test.getId()).removeValue()
-                                        .addOnSuccessListener(a ->
-                                                Toast.makeText(getContext(), "Test eliminado", Toast.LENGTH_SHORT).show())
-                                        .addOnFailureListener(e ->
-                                                Toast.makeText(getContext(), "Error al eliminar", Toast.LENGTH_SHORT).show())
+                                        .addOnSuccessListener(a -> {
+                                            if (getContext() != null)
+                                                Toast.makeText(getContext(), "Test eliminado", Toast.LENGTH_SHORT).show();
+                                        })
+                                        .addOnFailureListener(e -> {
+                                            if (getContext() != null)
+                                                Toast.makeText(getContext(), "Error al eliminar", Toast.LENGTH_SHORT).show();
+                                        })
                         )
                         .setNegativeButton("Cancelar", null)
                         .show();

@@ -185,7 +185,8 @@ public class CrearResumenFragment extends Fragment {
         ref.child(id).setValue(resumenInicial)
             .addOnSuccessListener(aVoid -> {
                 btnGenerar.setEnabled(false);
-                Toast.makeText(getContext(), "Resumen creado. La IA sigue generando el contenido en segundo plano...", Toast.LENGTH_SHORT).show();
+                if (getContext() != null)
+                    Toast.makeText(getContext(), "Resumen creado. La IA sigue generando el contenido en segundo plano...", Toast.LENGTH_SHORT).show();
                 new Handler(Looper.getMainLooper()).postDelayed(() -> {
                     if (isAdded()) getParentFragmentManager().popBackStack();
                 }, 700);

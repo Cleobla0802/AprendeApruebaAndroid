@@ -154,7 +154,10 @@ public class ProfileFragment extends Fragment {
                     }
 
                     @Override
-                    public void onCancelled(@NonNull DatabaseError error) {}
+                    public void onCancelled(@NonNull DatabaseError error) {
+                        if (getContext() != null)
+                            Toast.makeText(getContext(), "Error al cargar el usuario", Toast.LENGTH_SHORT).show();
+                    }
                 });
     }
 

@@ -238,11 +238,15 @@ public class RealizarTipoTestFragment extends Fragment {
 
         mDatabase.child(test.getId()).updateChildren(actualizacion)
                 .addOnSuccessListener(a -> {
-                    Toast.makeText(getContext(),
-                            "Test completado: " + aciertosFinal + "/" + preguntas.size() + " (" + nota + "%)",
-                            Toast.LENGTH_LONG).show();
+                    if (getContext() != null)
+                        Toast.makeText(getContext(),
+                                "Test completado: " + aciertosFinal + "/" + preguntas.size() + " (" + nota + "%)",
+                                Toast.LENGTH_LONG).show();
                     getParentFragmentManager().popBackStack();
                 })
-                .addOnFailureListener(e -> Toast.makeText(getContext(), "Error al guardar nota", Toast.LENGTH_SHORT).show());
+                .addOnFailureListener(e -> {
+                    if (getContext() != null)
+                        Toast.makeText(getContext(), "Error al guardar nota", Toast.LENGTH_SHORT).show();
+                });
     }
 }
