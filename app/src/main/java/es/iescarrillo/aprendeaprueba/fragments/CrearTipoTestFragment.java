@@ -115,7 +115,10 @@ public class CrearTipoTestFragment extends Fragment {
                     }
 
                     @Override
-                    public void onCancelled(@NonNull DatabaseError error) {}
+                    public void onCancelled(@NonNull DatabaseError error) {
+                        if (getContext() != null)
+                            Toast.makeText(getContext(), "Error de conexión", Toast.LENGTH_SHORT).show();
+                    }
                 });
     }
 
@@ -140,7 +143,10 @@ public class CrearTipoTestFragment extends Fragment {
                     }
 
                     @Override
-                    public void onCancelled(@NonNull DatabaseError error) {}
+                    public void onCancelled(@NonNull DatabaseError error) {
+                        if (getContext() != null)
+                            Toast.makeText(getContext(), "Error de conexión", Toast.LENGTH_SHORT).show();
+                    }
                 });
     }
 
@@ -208,13 +214,18 @@ public class CrearTipoTestFragment extends Fragment {
         testInicial.put("contenidoHash", contenidoHash);
         testInicial.put("fecha", System.currentTimeMillis());
 
-        testsRef.child(nuevoId).setValue(testInicial).addOnSuccessListener(a -> {
-            btnGenerar.setEnabled(false);
-            Toast.makeText(getContext(), "Test creado. Las preguntas se estan generando en segundo plano...", Toast.LENGTH_SHORT).show();
-            new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                if (isAdded()) getParentFragmentManager().popBackStack();
-            }, 700);
-        });
+        testsRef.child(nuevoId).setValue(testInicial)
+            .addOnSuccessListener(a -> {
+                btnGenerar.setEnabled(false);
+                Toast.makeText(getContext(), "Test creado. Las preguntas se estan generando en segundo plano...", Toast.LENGTH_SHORT).show();
+                new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                    if (isAdded()) getParentFragmentManager().popBackStack();
+                }, 700);
+            })
+            .addOnFailureListener(e -> {
+                if (getContext() != null)
+                    Toast.makeText(getContext(), "Error al crear el test", Toast.LENGTH_SHORT).show();
+            });
 
         Map<String, Object> body = new HashMap<>();
         body.put("contenido", contenidoProcesado);
@@ -265,7 +276,7 @@ public class CrearTipoTestFragment extends Fragment {
     private void actualizarTestSiExiste(DatabaseReference testsRef, String testId, Map<String, Object> updates) {
         testsRef.child(testId).get().addOnSuccessListener(snapshot -> {
             if (snapshot.exists()) {
-                testsRef.child(testId).updateChildren(updates);
+                testsRef.child(testId).updateChildren(updates).addOnFailureListener(e -> {});
             }
         });
     }

@@ -47,6 +47,8 @@ public class ResumenAdapter extends RecyclerView.Adapter<ResumenAdapter.ResumenV
 
         holder.tvCategoria.setText(generando ? "GENERANDO" : resumen.getCategoria());
         holder.tvTitulo.setText(resumen.getTitulo());
+        String desc = resumen.getDescripcion();
+        holder.tvDescripcion.setText(desc != null && !desc.isEmpty() ? desc : resumen.getResumenTexto());
         holder.tvFecha.setText(generando ? "Generando contenido en segundo plano..." : resumen.getFechaFormateada());
         holder.itemView.setAlpha(generando ? 0.75f : 1f);
 
@@ -77,13 +79,14 @@ public class ResumenAdapter extends RecyclerView.Adapter<ResumenAdapter.ResumenV
     }
 
     public static class ResumenViewHolder extends RecyclerView.ViewHolder {
-        TextView tvTitulo, tvFecha, tvCategoria;
+        TextView tvTitulo, tvDescripcion, tvFecha, tvCategoria;
         ImageButton btnEliminar;
         MaterialCardView cardView;
 
         public ResumenViewHolder(@NonNull View itemView) {
             super(itemView);
             tvTitulo = itemView.findViewById(R.id.tvTituloResumenItem);
+            tvDescripcion = itemView.findViewById(R.id.tvDescripcionResumenItem);
             tvFecha = itemView.findViewById(R.id.tvFechaResumenItem);
             tvCategoria = itemView.findViewById(R.id.tvCategoriaResumenItem);
             btnEliminar = itemView.findViewById(R.id.btnEliminarResumen);

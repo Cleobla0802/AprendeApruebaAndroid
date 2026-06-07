@@ -118,6 +118,7 @@ public class LoginActivity extends AppCompatActivity {
 
                     @Override
                     public void onError(@NonNull GetCredentialException e) {
+                        Toast.makeText(LoginActivity.this, "Error al iniciar con Google", Toast.LENGTH_SHORT).show();
                     }
                 });
     }
@@ -129,6 +130,7 @@ public class LoginActivity extends AppCompatActivity {
                 GoogleIdTokenCredential googleIdTokenCredential = GoogleIdTokenCredential.createFrom(customCredential.getData());
                 firebaseAuthWithGoogle(googleIdTokenCredential.getIdToken());
             } catch (Exception e) {
+                Toast.makeText(LoginActivity.this, "Error al procesar credencial", Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -152,7 +154,7 @@ public class LoginActivity extends AppCompatActivity {
         String email = user.getEmail();
 
         // Buscamos en el nodo "persons" como en tu código original
-        FirebaseDatabase.getInstance().getReference("persons")
+        FirebaseDatabase.getInstance().getReference("usuarios")
                 .child(uid)
                 .addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
@@ -173,6 +175,7 @@ public class LoginActivity extends AppCompatActivity {
 
                     @Override
                     public void onCancelled(@NonNull DatabaseError error) {
+                        irAMain();
                     }
                 });
     }

@@ -51,7 +51,8 @@ public class ApuntesAdapter extends RecyclerView.Adapter<ApuntesAdapter.ViewHold
         boolean generando = GenerationStateUtils.isApunteGenerating(apunte);
 
         holder.tvTitulo.setText(apunte.getTitulo());
-        holder.tvDescripcion.setText(apunte.getContenido());
+        String desc = apunte.getDescripcion();
+        holder.tvDescripcion.setText(desc != null && !desc.isEmpty() ? desc : apunte.getContenido());
         holder.tvCategoriaTag.setText(generando ? "GENERANDO" : (apunte.getCategoria() != null ? apunte.getCategoria() : "Sin categoria"));
         holder.cardApunte.setAlpha(generando ? 0.75f : 1f);
 
@@ -65,6 +66,7 @@ public class ApuntesAdapter extends RecyclerView.Adapter<ApuntesAdapter.ViewHold
             Bundle args = new Bundle();
             args.putString("id", apunte.getId());
             args.putString("titulo", apunte.getTitulo());
+            args.putString("descripcion", apunte.getDescripcion());
             args.putString("contenido", apunte.getContenido());
             args.putString("categoria", apunte.getCategoria());
             fragment.setArguments(args);

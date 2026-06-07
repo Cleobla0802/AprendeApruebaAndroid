@@ -82,7 +82,8 @@ public class RegisterActivity extends AppCompatActivity {
                         startActivity(new Intent(RegisterActivity.this, HomeActivity.class));
                         finish();
                     } else {
-                        Toast.makeText(this, "Error en el registro: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                        String msg = task.getException() != null ? task.getException().getMessage() : "Error en el registro";
+                        Toast.makeText(this, "Error en el registro: " + msg, Toast.LENGTH_SHORT).show();
                     }
                 });
     }
@@ -106,6 +107,7 @@ public class RegisterActivity extends AppCompatActivity {
 
                     @Override
                     public void onError(@NonNull GetCredentialException e) {
+                        Toast.makeText(RegisterActivity.this, "Error al iniciar con Google", Toast.LENGTH_SHORT).show();
                     }
                 });
     }
@@ -118,6 +120,7 @@ public class RegisterActivity extends AppCompatActivity {
                 GoogleIdTokenCredential googleIdTokenCredential = GoogleIdTokenCredential.createFrom(customCredential.getData());
                 firebaseAuthWithGoogle(googleIdTokenCredential.getIdToken());
             } catch (Exception e) {
+                Toast.makeText(RegisterActivity.this, "Error al procesar credencial", Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -142,7 +145,7 @@ public class RegisterActivity extends AppCompatActivity {
 
     private void comprobarUsuarioEnBaseDeDatos(FirebaseUser user) {
         String uid = user.getUid();
-        FirebaseDatabase.getInstance().getReference("persons")
+        FirebaseDatabase.getInstance().getReference("usuarios")
                 .child(uid)
                 .addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
@@ -190,6 +193,10 @@ public class RegisterActivity extends AppCompatActivity {
                 }
                 if (pass.length() < 6) {
                     Toast.makeText(this, "La contraseña debe tener al menos 6 caracteres", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                if (user.getEmail() == null) {
+                    Toast.makeText(this, "No se puede establecer contraseña: correo no disponible", Toast.LENGTH_LONG).show();
                     return;
                 }
 

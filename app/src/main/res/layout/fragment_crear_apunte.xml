@@ -86,6 +86,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:hint="Resumen breve..."
+                        android:maxLength="150"
                         android:textColor="@android:color/white"
                         android:textColorHint="#555555" />
                 </com.google.android.material.textfield.TextInputLayout>

@@ -13,7 +13,6 @@ public class RetrofitClient {
 
     private static final String BASE_URL = "https://api-aprende-aprueba-1.onrender.com/";
 
-    // 1. CAMBIO: Ahora es PUBLIC para que otros fragments puedan usarlo
     public static Retrofit getClient(String baseUrl) {
         OkHttpClient okHttpClient = new OkHttpClient.Builder()
                 .connectTimeout(60, TimeUnit.SECONDS)
@@ -28,7 +27,6 @@ public class RetrofitClient {
                 .build();
     }
 
-    // 2. NUEVO MÉTODO: Para obtener el servicio de Resúmenes fácilmente
     public static ResumenService getResumenService() {
         return getClient(BASE_URL).create(ResumenService.class);
     }

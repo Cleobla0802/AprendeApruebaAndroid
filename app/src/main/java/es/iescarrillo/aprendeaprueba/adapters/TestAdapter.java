@@ -64,9 +64,10 @@ public class TestAdapter extends RecyclerView.Adapter<TestAdapter.TestViewHolder
             holder.card.setStrokeColor(0xFFFF4444);
             holder.btnRealizar.setText("No generado");
         } else if (test.isCompletado() || test.getCalificacion() != null) {
+            Double calif = test.getCalificacion();
             int nota = test.getUltimaNota() > 0
                     ? test.getUltimaNota()
-                    : (int) Math.round(test.getCalificacion() * 10);
+                    : (calif != null ? (int) Math.round(calif * 10) : 0);
             holder.tvNota.setVisibility(View.VISIBLE);
             holder.tvNota.setText(nota + "%");
 

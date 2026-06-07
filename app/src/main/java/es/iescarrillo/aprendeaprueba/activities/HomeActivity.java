@@ -134,7 +134,9 @@ public class HomeActivity extends AppCompatActivity {
                 tvApuntes.setText(String.valueOf(snapshot.getChildrenCount()));
             }
             @Override
-            public void onCancelled(DatabaseError error) {}
+            public void onCancelled(DatabaseError error) {
+                tvApuntes.setText("0");
+            }
         };
         qApuntes.addValueEventListener(listenerApuntes);
 
@@ -145,7 +147,9 @@ public class HomeActivity extends AppCompatActivity {
                 tvResumenes.setText(String.valueOf(snapshot.getChildrenCount()));
             }
             @Override
-            public void onCancelled(DatabaseError error) {}
+            public void onCancelled(DatabaseError error) {
+                tvResumenes.setText("0");
+            }
         };
         qResumenes.addValueEventListener(listenerResumenes);
 
@@ -156,7 +160,9 @@ public class HomeActivity extends AppCompatActivity {
                 tvPruebas.setText(String.valueOf(snapshot.getChildrenCount()));
             }
             @Override
-            public void onCancelled(DatabaseError error) {}
+            public void onCancelled(DatabaseError error) {
+                tvPruebas.setText("0");
+            }
         };
         qPruebas.addValueEventListener(listenerPruebas);
     }

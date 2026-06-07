@@ -44,13 +44,13 @@
             app:tint="#FF6666" />
 
         <TextView
-            android:id="@+id/tvFechaResumenItem"
+            android:id="@+id/tvDescripcionResumenItem"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
             android:ellipsize="end"
             android:maxLines="2"
-            android:text="Fecha"
+            android:text="Descripcion..."
             android:textColor="#D6D6D6"
             android:textSize="14sp"
             app:layout_constraintEnd_toEndOf="parent"
@@ -58,10 +58,24 @@
             app:layout_constraintTop_toBottomOf="@id/tvTituloResumenItem" />
 
         <TextView
+            android:id="@+id/tvFechaResumenItem"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:text="Fecha"
+            android:textColor="#9E9E9E"
+            android:textSize="12sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvDescripcionResumenItem" />
+
+        <TextView
             android:id="@+id/tvCategoriaResumenItem"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
+            android:layout_marginTop="8dp"
             android:text="Categoria"
             android:textColor="#E7D7FF"
             android:textSize="12sp"

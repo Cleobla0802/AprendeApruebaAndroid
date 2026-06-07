@@ -152,7 +152,10 @@ public class CrearApunteFragment extends Fragment {
         apunteInicial.put("userId", userId);
         apunteInicial.put("fecha", System.currentTimeMillis());
 
-        ref.child(apunteId).setValue(apunteInicial);
+        ref.child(apunteId).setValue(apunteInicial).addOnFailureListener(e -> {
+            if (getContext() != null)
+                Toast.makeText(getContext(), "Error al crear el apunte", Toast.LENGTH_SHORT).show();
+        });
         Toast.makeText(getContext(), "Apunte creado. La digitalizacion continua en segundo plano...", Toast.LENGTH_SHORT).show();
         limpiarFormulario();
         new Handler(Looper.getMainLooper()).postDelayed(() -> {
@@ -230,7 +233,7 @@ public class CrearApunteFragment extends Fragment {
         updates.put("estado", estado);
         ref.get().addOnSuccessListener(snapshot -> {
             if (snapshot.exists()) {
-                ref.updateChildren(updates);
+                ref.updateChildren(updates).addOnFailureListener(e -> {});
             }
         });
     }

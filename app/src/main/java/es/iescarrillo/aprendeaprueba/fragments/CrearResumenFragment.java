@@ -97,7 +97,10 @@ public class CrearResumenFragment extends Fragment {
             }
 
             @Override
-            public void onCancelled(@NonNull DatabaseError error) {}
+            public void onCancelled(@NonNull DatabaseError error) {
+                if (getContext() != null)
+                    Toast.makeText(getContext(), "Error de conexión", Toast.LENGTH_SHORT).show();
+            }
         });
     }
 
@@ -126,7 +129,9 @@ public class CrearResumenFragment extends Fragment {
     }
 
     private String getCategoriaValor() {
-        return categoriasValores[spinnerCategoria.getSelectedItemPosition()];
+        int pos = spinnerCategoria.getSelectedItemPosition();
+        if (pos < 0 || pos >= categoriasValores.length) return "";
+        return categoriasValores[pos];
     }
 
     private boolean validarCampos() {
@@ -150,6 +155,7 @@ public class CrearResumenFragment extends Fragment {
 
     private void ejecutarProcesoIA() {
         int pos = spinnerApuntes.getSelectedItemPosition();
+        if (pos < 0 || pos >= listaApuntesObj.size()) return;
         Apuntes seleccionado = listaApuntesObj.get(pos);
         if (GenerationStateUtils.isApunteGenerating(seleccionado)) {
             Toast.makeText(getContext(), "Ese apunte aun se esta digitalizando. Espera a que termine.", Toast.LENGTH_LONG).show();
@@ -176,13 +182,18 @@ public class CrearResumenFragment extends Fragment {
         resumenInicial.put("fecha", System.currentTimeMillis());
         resumenInicial.put("categoria", categoria);
 
-        ref.child(id).setValue(resumenInicial).addOnSuccessListener(aVoid -> {
-            btnGenerar.setEnabled(false);
-            Toast.makeText(getContext(), "Resumen creado. La IA sigue generando el contenido en segundo plano...", Toast.LENGTH_SHORT).show();
-            new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                if (isAdded()) getParentFragmentManager().popBackStack();
-            }, 700);
-        });
+        ref.child(id).setValue(resumenInicial)
+            .addOnSuccessListener(aVoid -> {
+                btnGenerar.setEnabled(false);
+                Toast.makeText(getContext(), "Resumen creado. La IA sigue generando el contenido en segundo plano...", Toast.LENGTH_SHORT).show();
+                new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                    if (isAdded()) getParentFragmentManager().popBackStack();
+                }, 700);
+            })
+            .addOnFailureListener(e -> {
+                if (getContext() != null)
+                    Toast.makeText(getContext(), "Error al crear el resumen", Toast.LENGTH_SHORT).show();
+            });
 
         String resumenId = id;
         Map<String, String> payload = new HashMap<>();
@@ -220,7 +231,7 @@ public class CrearResumenFragment extends Fragment {
             Map<String, Object> updates = new HashMap<>();
             updates.put("resumenTexto", contenido);
             updates.put("estado", estado);
-            ref.child(resumenId).updateChildren(updates);
+            ref.child(resumenId).updateChildren(updates).addOnFailureListener(e -> {});
         });
     }
 }

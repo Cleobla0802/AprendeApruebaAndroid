@@ -27,7 +27,7 @@ import es.iescarrillo.aprendeaprueba.R;
 
 public class DetalleApunteFragment extends Fragment {
 
-    private TextInputEditText etTitulo, etContenido;
+    private TextInputEditText etTitulo, etDescripcion, etContenido;
     private AutoCompleteTextView spinnerCategoria;
     private ExtendedFloatingActionButton fabGuardar;
     private ProgressBar pbCargando;
@@ -43,6 +43,7 @@ public class DetalleApunteFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         etTitulo = view.findViewById(R.id.etTitulo);
+        etDescripcion = view.findViewById(R.id.etDescripcion);
         etContenido = view.findViewById(R.id.etContenido);
         spinnerCategoria = view.findViewById(R.id.spinnerCategoria);
         fabGuardar = view.findViewById(R.id.fabGuardar);
@@ -76,6 +77,7 @@ public class DetalleApunteFragment extends Fragment {
         if (getArguments() != null) {
             apunteId = getArguments().getString("id");
             etTitulo.setText(getArguments().getString("titulo"));
+            etDescripcion.setText(getArguments().getString("descripcion"));
             etContenido.setText(getArguments().getString("contenido"));
             // Importante el 'false' para que no filtre la lista al poner el texto inicial
             spinnerCategoria.setText(getArguments().getString("categoria"), false);
@@ -87,6 +89,7 @@ public class DetalleApunteFragment extends Fragment {
     private void actualizarApunte() {
         // Obtenemos los valores actuales de las vistas
         String nuevoTitulo = etTitulo.getText().toString().trim();
+        String nuevaDescripcion = etDescripcion.getText().toString().trim();
         String nuevoContenido = etContenido.getText().toString().trim();
         String nuevaCat = spinnerCategoria.getText().toString();
 
@@ -102,6 +105,7 @@ public class DetalleApunteFragment extends Fragment {
 
         Map<String, Object> updates = new HashMap<>();
         updates.put("titulo", nuevoTitulo);
+        updates.put("descripcion", nuevaDescripcion);
         updates.put("contenido", nuevoContenido);
         updates.put("categoria", nuevaCat);
 
