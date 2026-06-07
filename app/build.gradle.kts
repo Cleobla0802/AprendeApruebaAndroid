@@ -16,7 +16,6 @@ android {
         versionCode = 1
         versionName = "1.0"
 
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
@@ -29,7 +28,6 @@ android {
         }
     }
 
-    // --- CAMBIO AQUÍ: SUBIMOS A JAVA 21 ---
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
@@ -81,12 +79,6 @@ dependencies {
     implementation("androidx.navigation:navigation-ui-ktx:2.7.6")
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0")
     implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.7.0")
-
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.ext.junit)
-    androidTestImplementation(libs.espresso.core)
-    debugImplementation(libs.ui.tooling)
-    debugImplementation(libs.ui.test.manifest)
 
     implementation("com.google.android.gms:play-services-auth:21.3.0")
 }

@@ -29,7 +29,6 @@ public class RecuperarPasswordActivity extends AppCompatActivity {
         setContentView(R.layout.activity_recuperar_password);
 
         mAuth = FirebaseAuth.getInstance();
-        mAuth.getFirebaseAuthSettings().setAppVerificationDisabledForTesting(true);
         etEmail = findViewById(R.id.etEmailRecuperar);
         btnRecuperar = findViewById(R.id.btnRecuperar);
         tvVolver = findViewById(R.id.tvVolverLogin);

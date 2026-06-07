@@ -68,8 +68,6 @@ public class LoginActivity extends AppCompatActivity {
         instanceAuth = FirebaseAuth.getInstance();
         credentialManager = CredentialManager.create(this);
 
-        instanceAuth.getFirebaseAuthSettings().setAppVerificationDisabledForTesting(true);
-
         if (instanceAuth.getCurrentUser() != null) {
             irAMain();
         }
