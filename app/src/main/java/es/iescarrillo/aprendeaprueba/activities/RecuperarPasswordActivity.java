@@ -9,10 +9,6 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 
 import es.iescarrillo.aprendeaprueba.R;
 
@@ -45,44 +41,17 @@ public class RecuperarPasswordActivity extends AppCompatActivity {
             return;
         }
 
-        FirebaseDatabase.getInstance().getReference("usuarios")
-                .addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot snapshot) {
-                        boolean encontrado = false;
-                        for (DataSnapshot user : snapshot.getChildren()) {
-                            String emailGuardado = user.child("email").getValue(String.class);
-                            if (emailGuardado != null && emailGuardado.equalsIgnoreCase(email)) {
-                                encontrado = true;
-                                break;
-                            }
-                        }
-
-                        if (!encontrado) {
-                            Toast.makeText(RecuperarPasswordActivity.this,
-                                    "Este correo no está registrado", Toast.LENGTH_SHORT).show();
-                            return;
-                        }
-
-                        mAuth.sendPasswordResetEmail(email)
-                                .addOnSuccessListener(a -> {
-                                    Toast.makeText(RecuperarPasswordActivity.this,
-                                            "¡Correo enviado! Revisa tu bandeja de entrada",
-                                            Toast.LENGTH_LONG).show();
-                                    finish();
-                                })
-                                .addOnFailureListener(e -> {
-                                    String msg = e.getMessage() != null ? e.getMessage() : "Error al enviar el correo";
-                                    Toast.makeText(RecuperarPasswordActivity.this,
-                                            "Error: " + msg, Toast.LENGTH_LONG).show();
-                                });
-                    }
-
-                    @Override
-                    public void onCancelled(DatabaseError error) {
-                        Toast.makeText(RecuperarPasswordActivity.this,
-                                "Error de conexión", Toast.LENGTH_SHORT).show();
-                    }
+        mAuth.sendPasswordResetEmail(email)
+                .addOnSuccessListener(a -> {
+                    Toast.makeText(RecuperarPasswordActivity.this,
+                            "¡Correo enviado! Revisa tu bandeja de entrada",
+                            Toast.LENGTH_LONG).show();
+                    finish();
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(RecuperarPasswordActivity.this,
+                            "Este correo no está registrado en nuestro sistema",
+                            Toast.LENGTH_SHORT).show();
                 });
     }
 }
