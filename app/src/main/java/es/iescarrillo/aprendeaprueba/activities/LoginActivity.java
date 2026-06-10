@@ -9,7 +9,6 @@ import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -42,6 +41,11 @@ public class LoginActivity extends AppCompatActivity {
     private FirebaseAuth instanceAuth;
     private CredentialManager credentialManager;
 
+    /**
+     * Inicializa la pantalla de login: enlaza los componentes del layout,
+     * configura los listeners de los botones y redirige directamente a Home
+     * si el usuario ya tiene sesión iniciada.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -86,7 +90,9 @@ public class LoginActivity extends AppCompatActivity {
                         if (task.isSuccessful()) {
                             irAMain();
                         } else {
-                            String msg = task.getException() != null ? task.getException().getMessage() : "Credenciales incorrectas";
+                            String msg = task.getException() != null
+                                    ? task.getException().getMessage()
+                                    : "Credenciales incorrectas";
                             Toast.makeText(this, "Error: " + msg, Toast.LENGTH_LONG).show();
                         }
                     });
@@ -99,6 +105,11 @@ public class LoginActivity extends AppCompatActivity {
         btnGoogle.setOnClickListener(v -> loginWithGoogle());
     }
 
+    /**
+     * Lanza el flujo de login con Google usando el CredentialManager.
+     * Solicita las cuentas disponibles en el dispositivo sin filtrar
+     * solo las ya autorizadas, para permitir añadir cuentas nuevas.
+     */
     private void loginWithGoogle() {
         GetGoogleIdOption googleIdOption = new GetGoogleIdOption.Builder()
                 .setFilterByAuthorizedAccounts(false)
@@ -123,11 +134,19 @@ public class LoginActivity extends AppCompatActivity {
                 });
     }
 
+    /**
+     * Procesa la credencial devuelta por Google y extrae el ID token
+     * para autenticar al usuario en Firebase.
+     * Si la credencial no es del tipo esperado o falla el parseo, muestra un error.
+     *
+     * @param credential Credencial obtenida del CredentialManager
+     */
     private void handleGoogleCredential(Credential credential) {
         if (credential instanceof CustomCredential customCredential
                 && GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL.equals(credential.getType())) {
             try {
-                GoogleIdTokenCredential googleIdTokenCredential = GoogleIdTokenCredential.createFrom(customCredential.getData());
+                GoogleIdTokenCredential googleIdTokenCredential =
+                        GoogleIdTokenCredential.createFrom(customCredential.getData());
                 firebaseAuthWithGoogle(googleIdTokenCredential.getIdToken());
             } catch (Exception e) {
                 Toast.makeText(LoginActivity.this, "Error al procesar credencial", Toast.LENGTH_SHORT).show();
@@ -135,6 +154,13 @@ public class LoginActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Autentica al usuario en Firebase usando el ID token de Google.
+     * Si la autenticación es exitosa, comprueba si el usuario ya existe
+     * en la base de datos antes de redirigirlo.
+     *
+     * @param idToken Token de identidad obtenido de Google
+     */
     private void firebaseAuthWithGoogle(String idToken) {
         AuthCredential credential = GoogleAuthProvider.getCredential(idToken, null);
         instanceAuth.signInWithCredential(credential).addOnCompleteListener(this, task -> {
@@ -149,6 +175,14 @@ public class LoginActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Comprueba si el usuario autenticado con Google ya tiene perfil en la base de datos.
+     * Si existe, va directamente a Home. Si no existe, redirige al registro
+     * pasando su email y UID para pre-rellenar el formulario.
+     * En caso de error de base de datos, redirige a Home como fallback seguro.
+     *
+     * @param user Usuario autenticado en Firebase
+     */
     private void comprobarUsuarioEnBaseDeDatos(FirebaseUser user) {
         String uid = user.getUid();
         String email = user.getEmail();
@@ -172,11 +206,16 @@ public class LoginActivity extends AppCompatActivity {
 
                     @Override
                     public void onCancelled(@NonNull DatabaseError error) {
+                        // Si falla la consulta, se redirige a Home como medida de seguridad
                         irAMain();
                     }
                 });
     }
 
+    /**
+     * Navega a la pantalla principal (HomeActivity) y elimina LoginActivity
+     * de la pila de navegación para que el usuario no pueda volver atrás.
+     */
     private void irAMain() {
         Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
         startActivity(intent);

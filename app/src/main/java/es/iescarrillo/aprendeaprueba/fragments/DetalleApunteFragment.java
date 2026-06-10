@@ -33,11 +33,19 @@ public class DetalleApunteFragment extends Fragment {
     private ProgressBar pbCargando;
     private String apunteId;
 
+    /**
+     * Infla el layout del fragmento. Los datos se cargan en onViewCreated
+     * para asegurarse de que las vistas ya están creadas antes de acceder a ellas.
+     */
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_detalle_apunte, container, false);
     }
 
+    /**
+     * Inicializa las vistas, configura el dropdown de categorías con texto blanco
+     * y rellena los campos con los datos del apunte recibidos como argumentos del fragmento.
+     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -83,6 +91,11 @@ public class DetalleApunteFragment extends Fragment {
         fabGuardar.setOnClickListener(v -> actualizarApunte());
     }
 
+    /**
+     * Valida que los campos obligatorios no estén vacíos y actualiza el apunte en Firebase.
+     * Muestra el ProgressBar mientras se realiza la operación y lo oculta al terminar.
+     * Si la actualización es exitosa, vuelve a la pantalla anterior.
+     */
     private void actualizarApunte() {
         String nuevoTitulo = etTitulo.getText().toString().trim();
         String nuevaDescripcion = etDescripcion.getText().toString().trim();

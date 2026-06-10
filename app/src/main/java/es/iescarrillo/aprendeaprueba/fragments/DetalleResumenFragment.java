@@ -36,11 +36,19 @@ public class DetalleResumenFragment extends Fragment {
 
     public DetalleResumenFragment() {}
 
+    /**
+     * Infla el layout del fragmento. Los datos se cargan en onViewCreated
+     * para asegurarse de que las vistas ya están creadas antes de acceder a ellas.
+     */
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_detalles_resumen, container, false);
     }
 
+    /**
+     * Inicializa las vistas, configura el dropdown de categorías con texto blanco
+     * y rellena los campos con los datos del resumen recibido como argumento serializable.
+     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -86,6 +94,11 @@ public class DetalleResumenFragment extends Fragment {
         fabGuardar.setOnClickListener(v -> actualizarResumen());
     }
 
+    /**
+     * Valida que los campos obligatorios no estén vacíos y actualiza el resumen en Firebase.
+     * Muestra el ProgressBar mientras se realiza la operación y lo oculta al terminar.
+     * Si la actualización es exitosa, vuelve a la pantalla anterior.
+     */
     private void actualizarResumen() {
         String nuevoTitulo = etTitulo.getText().toString().trim();
         String nuevaDescripcion = etDescripcion.getText().toString().trim();

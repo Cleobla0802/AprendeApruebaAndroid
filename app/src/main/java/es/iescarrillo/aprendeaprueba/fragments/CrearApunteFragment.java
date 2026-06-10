@@ -73,6 +73,10 @@ public class CrearApunteFragment extends Fragment {
             }
     );
 
+    /**
+     * Infla el layout del fragmento e inicializa las vistas, el spinner de categorías
+     * y los listeners de los botones.
+     */
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -95,6 +99,9 @@ public class CrearApunteFragment extends Fragment {
         return root;
     }
 
+    /**
+     * Configura el spinner de categorías con el adaptador y el layout personalizado.
+     */
     private void configurarSpinners() {
         if (getContext() == null) return;
         ArrayAdapter<String> adapterCat = new ArrayAdapter<>(getContext(), R.layout.spinner_item_blanco, categoriasNombres);
@@ -102,16 +109,27 @@ public class CrearApunteFragment extends Fragment {
         spinnerCategoria.setAdapter(adapterCat);
     }
 
+    /**
+     * Devuelve el valor interno de la categoría seleccionada en el spinner.
+     * Usa el índice para mapear el nombre visible con su clave de base de datos.
+     */
     private String getCategoriaValor() {
         int pos = spinnerCategoria.getSelectedItemPosition();
         return categoriasValores[Math.max(0, Math.min(pos, categoriasValores.length - 1))];
     }
 
+    /**
+     * Abre la galería del dispositivo para que el usuario seleccione una imagen.
+     */
     private void abrirGaleria() {
         Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
         imagePickerLauncher.launch(intent);
     }
 
+    /**
+     * Valida que el formulario tenga título e imagen antes de guardar.
+     * Si todo es correcto, crea el nodo en Firebase y lanza la subida de imagen al backend.
+     */
     private void validarYGuardar() {
         String titulo = etTitulo.getText() != null ? etTitulo.getText().toString().trim() : "";
         if (titulo.isEmpty() || imagenUri == null) {
@@ -137,6 +155,13 @@ public class CrearApunteFragment extends Fragment {
         subirImagenAlBackend(apunteId, uriFinal);
     }
 
+    /**
+     * Crea el nodo del apunte en Firebase con estado "generando" y devuelve su ID.
+     * Después limpia el formulario y vuelve atrás para que el usuario no espere en pantalla.
+     * @param titulo  Título introducido por el usuario.
+     * @param userId  UID del usuario autenticado.
+     * @return ID del apunte creado, o null si Firebase no pudo generarlo.
+     */
     private String guardarApunteInicial(String titulo, String userId) {
         DatabaseReference ref = FirebaseDatabase.getInstance().getReference("apuntes");
         String apunteId = ref.push().getKey();
@@ -165,6 +190,13 @@ public class CrearApunteFragment extends Fragment {
         return apunteId;
     }
 
+    /**
+     * Copia la imagen seleccionada a un archivo temporal y la envía al backend mediante Retrofit.
+     * Cuando el servidor responde, actualiza el contenido del apunte en Firebase con el texto generado.
+     * En caso de cualquier error, llama a marcarError para dejar el apunte en estado de fallo.
+     * @param apunteId ID del apunte ya creado en Firebase.
+     * @param uri      URI de la imagen seleccionada por el usuario.
+     */
     private void subirImagenAlBackend(String apunteId, Uri uri) {
         try {
             if (getContext() == null || uri == null) {
@@ -221,10 +253,22 @@ public class CrearApunteFragment extends Fragment {
         }
     }
 
+    /**
+     * Marca el apunte como fallido en Firebase con un mensaje de error descriptivo.
+     * @param apunteId ID del apunte a marcar.
+     * @param contenido Mensaje de error que se guardará como contenido del apunte.
+     */
     private void marcarError(String apunteId, String contenido) {
         actualizarContenidoApunte(apunteId, contenido, "error");
     }
 
+    /**
+     * Actualiza el contenido y el estado de un apunte en Firebase.
+     * Comprueba primero que el nodo existe antes de escribir para evitar crear datos huérfanos.
+     * @param apunteId ID del apunte a actualizar.
+     * @param contenido Texto generado por la IA o mensaje de error.
+     * @param estado    Estado final del apunte ("listo" o "error").
+     */
     private void actualizarContenidoApunte(String apunteId, String contenido, String estado) {
         if (apunteId == null || apunteId.trim().isEmpty()) return;
         DatabaseReference ref = FirebaseDatabase.getInstance().getReference("apuntes").child(apunteId);
@@ -238,6 +282,9 @@ public class CrearApunteFragment extends Fragment {
         });
     }
 
+    /**
+     * Restablece todos los campos del formulario a su estado inicial.
+     */
     private void limpiarFormulario() {
         if (etTitulo != null) etTitulo.setText("");
         if (etDescripcion != null) etDescripcion.setText("");

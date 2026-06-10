@@ -49,6 +49,10 @@ public class CrearResumenFragment extends Fragment {
 
     public CrearResumenFragment() {}
 
+    /**
+     * Infla el layout del fragmento, inicializa las vistas y configura los spinners,
+     * el autorelleno de descripción y el botón de generar.
+     */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_crear_resumen, container, false);
@@ -70,6 +74,10 @@ public class CrearResumenFragment extends Fragment {
         return view;
     }
 
+    /**
+     * Carga una sola vez los apuntes del usuario desde Firebase y los muestra en el spinner.
+     * Usa addListenerForSingleValueEvent porque no se necesita escucha en tiempo real aquí.
+     */
     private void cargarApuntesDesdeFirebase() {
         if (FirebaseAuth.getInstance().getCurrentUser() == null) return;
         String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
@@ -104,6 +112,9 @@ public class CrearResumenFragment extends Fragment {
         });
     }
 
+    /**
+     * Configura el spinner de categorías con el adaptador y el layout personalizado.
+     */
     private void configurarSpinnerCategorias() {
         if (getContext() != null) {
             ArrayAdapter<String> adapter = new ArrayAdapter<>(getContext(),
@@ -113,6 +124,10 @@ public class CrearResumenFragment extends Fragment {
         }
     }
 
+    /**
+     * Rellena automáticamente el campo de descripción con la del apunte seleccionado
+     * cada vez que el usuario cambia la selección en el spinner de apuntes.
+     */
     private void configurarAutoRellenoDescripcion() {
         spinnerApuntes.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
             @Override
@@ -128,12 +143,21 @@ public class CrearResumenFragment extends Fragment {
         });
     }
 
+    /**
+     * Devuelve el valor interno de la categoría seleccionada en el spinner.
+     */
     private String getCategoriaValor() {
         int pos = spinnerCategoria.getSelectedItemPosition();
         if (pos < 0 || pos >= categoriasValores.length) return "";
         return categoriasValores[pos];
     }
 
+    /**
+     * Comprueba que el formulario sea válido antes de lanzar la generación.
+     * Verifica que haya apuntes disponibles, que el título no esté vacío
+     * y que la descripción no supere los 150 caracteres.
+     * @return true si todos los campos son válidos, false en caso contrario.
+     */
     private boolean validarCampos() {
         String titulo = etTitulo.getText().toString().trim();
         String descripcion = etDescripcion.getText().toString().trim();
@@ -153,6 +177,11 @@ public class CrearResumenFragment extends Fragment {
         return true;
     }
 
+    /**
+     * Crea el nodo del resumen en Firebase con estado "generando", vuelve atrás
+     * y lanza en paralelo la llamada al backend de IA con el contenido del apunte seleccionado.
+     * Cuando la IA responde, actualiza el resumen con el texto generado o con un mensaje de error.
+     */
     private void ejecutarProcesoIA() {
         int pos = spinnerApuntes.getSelectedItemPosition();
         if (pos < 0 || pos >= listaApuntesObj.size()) return;
@@ -183,18 +212,18 @@ public class CrearResumenFragment extends Fragment {
         resumenInicial.put("categoria", categoria);
 
         ref.child(id).setValue(resumenInicial)
-            .addOnSuccessListener(aVoid -> {
-                btnGenerar.setEnabled(false);
-                if (getContext() != null)
-                    Toast.makeText(getContext(), "Resumen creado. La IA sigue generando el contenido en segundo plano...", Toast.LENGTH_SHORT).show();
-                new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                    if (isAdded()) getParentFragmentManager().popBackStack();
-                }, 700);
-            })
-            .addOnFailureListener(e -> {
-                if (getContext() != null)
-                    Toast.makeText(getContext(), "Error al crear el resumen", Toast.LENGTH_SHORT).show();
-            });
+                .addOnSuccessListener(aVoid -> {
+                    btnGenerar.setEnabled(false);
+                    if (getContext() != null)
+                        Toast.makeText(getContext(), "Resumen creado. La IA sigue generando el contenido en segundo plano...", Toast.LENGTH_SHORT).show();
+                    new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                        if (isAdded()) getParentFragmentManager().popBackStack();
+                    }, 700);
+                })
+                .addOnFailureListener(e -> {
+                    if (getContext() != null)
+                        Toast.makeText(getContext(), "Error al crear el resumen", Toast.LENGTH_SHORT).show();
+                });
 
         String resumenId = id;
         Map<String, String> payload = new HashMap<>();
@@ -225,6 +254,14 @@ public class CrearResumenFragment extends Fragment {
         });
     }
 
+    /**
+     * Actualiza el texto y el estado del resumen en Firebase solo si el nodo sigue existiendo.
+     * La comprobación previa evita escribir sobre un resumen que el usuario haya borrado mientras se generaba.
+     * @param ref       Referencia al nodo "resumenes" en Firebase.
+     * @param resumenId ID del resumen a actualizar.
+     * @param contenido Texto generado por la IA o mensaje de error.
+     * @param estado    Estado final del resumen ("listo" o "error").
+     */
     private void actualizarResumenSiExiste(DatabaseReference ref, String resumenId, String contenido, String estado) {
         ref.child(resumenId).get().addOnSuccessListener(snapshot -> {
             if (!snapshot.exists()) return;

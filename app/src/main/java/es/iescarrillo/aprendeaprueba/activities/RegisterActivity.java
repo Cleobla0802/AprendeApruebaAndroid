@@ -32,6 +32,11 @@ import com.google.firebase.database.ValueEventListener;
 
 import es.iescarrillo.aprendeaprueba.R;
 
+/**
+ * Pantalla de registro que permite crear una cuenta con email/contraseña
+ * o mediante Google. Si el usuario se registra con Google, también puede
+ * vincular una contraseña para poder iniciar sesión por ambas vías.
+ */
 public class RegisterActivity extends AppCompatActivity {
 
     private static final String TAG = "REGISTER_GOOGLE";
@@ -41,6 +46,10 @@ public class RegisterActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
     private CredentialManager credentialManager;
 
+    /**
+     * Inicializa la pantalla: enlaza los componentes del layout y configura
+     * los listeners del botón de registro, el botón de Google y el enlace al login.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -58,9 +67,15 @@ public class RegisterActivity extends AppCompatActivity {
 
         btnRegister.setOnClickListener(v -> registerWithEmail());
         btnGoogle.setOnClickListener(v -> loginWithGoogle());
+
+        // finish() cierra esta pantalla y vuelve al Login sin necesidad de otra Activity
         tvLogin.setOnClickListener(v -> finish());
     }
 
+    /**
+     * Valida los campos del formulario y crea una nueva cuenta en Firebase
+     * con email y contraseña. Si el registro es exitoso, navega a Home.
+     */
     private void registerWithEmail() {
         String email = etEmail.getText().toString().trim();
         String pass = etPassword.getText().toString().trim();
@@ -82,12 +97,18 @@ public class RegisterActivity extends AppCompatActivity {
                         startActivity(new Intent(RegisterActivity.this, HomeActivity.class));
                         finish();
                     } else {
-                        String msg = task.getException() != null ? task.getException().getMessage() : "Error en el registro";
+                        String msg = task.getException() != null
+                                ? task.getException().getMessage()
+                                : "Error en el registro";
                         Toast.makeText(this, "Error en el registro: " + msg, Toast.LENGTH_SHORT).show();
                     }
                 });
     }
 
+    /**
+     * Lanza el flujo de registro/login con Google usando el CredentialManager.
+     * Permite seleccionar cualquier cuenta del dispositivo, no solo las ya autorizadas.
+     */
     private void loginWithGoogle() {
         GetGoogleIdOption googleIdOption = new GetGoogleIdOption.Builder()
                 .setFilterByAuthorizedAccounts(false)
@@ -112,11 +133,19 @@ public class RegisterActivity extends AppCompatActivity {
                 });
     }
 
+    /**
+     * Procesa la credencial devuelta por Google y extrae el ID token
+     * para autenticar al usuario en Firebase.
+     * Si la credencial no es del tipo esperado o falla el parseo, muestra un error.
+     *
+     * @param credential Credencial obtenida del CredentialManager
+     */
     private void handleSignIn(Credential credential) {
         if (credential instanceof CustomCredential customCredential
                 && credential.getType().equals(GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL)) {
             try {
-                GoogleIdTokenCredential googleIdTokenCredential = GoogleIdTokenCredential.createFrom(customCredential.getData());
+                GoogleIdTokenCredential googleIdTokenCredential =
+                        GoogleIdTokenCredential.createFrom(customCredential.getData());
                 firebaseAuthWithGoogle(googleIdTokenCredential.getIdToken());
             } catch (Exception e) {
                 Toast.makeText(RegisterActivity.this, "Error al procesar credencial", Toast.LENGTH_SHORT).show();
@@ -124,6 +153,13 @@ public class RegisterActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Autentica al usuario en Firebase con el ID token de Google.
+     * Si tiene éxito, comprueba si el usuario ya existe en la base de datos
+     * antes de decidir si redirigir a Home o continuar con el registro.
+     *
+     * @param idToken Token de identidad obtenido de Google
+     */
     private void firebaseAuthWithGoogle(String idToken) {
         AuthCredential credential = GoogleAuthProvider.getCredential(idToken, null);
         mAuth.signInWithCredential(credential)
@@ -136,12 +172,22 @@ public class RegisterActivity extends AppCompatActivity {
                             irAHome();
                         }
                     } else {
-                        String msg = task.getException() != null ? task.getException().getMessage() : "Error de autenticación";
+                        String msg = task.getException() != null
+                                ? task.getException().getMessage()
+                                : "Error de autenticación";
                         Toast.makeText(this, "Error: " + msg, Toast.LENGTH_LONG).show();
                     }
                 });
     }
 
+    /**
+     * Comprueba si el usuario autenticado con Google ya tiene perfil en la base de datos.
+     * Si ya existe, va directamente a Home. Si no, muestra el diálogo para establecer
+     * una contraseña opcional y vincularla a su cuenta de Google.
+     * En caso de error de base de datos, redirige a Home como fallback seguro.
+     *
+     * @param user Usuario autenticado en Firebase
+     */
     private void comprobarUsuarioEnBaseDeDatos(FirebaseUser user) {
         String uid = user.getUid();
         FirebaseDatabase.getInstance().getReference("usuarios")
@@ -158,11 +204,20 @@ public class RegisterActivity extends AppCompatActivity {
 
                     @Override
                     public void onCancelled(@NonNull DatabaseError error) {
+                        // Si falla la consulta, se redirige a Home como medida de seguridad
                         irAHome();
                     }
                 });
     }
 
+    /**
+     * Muestra un diálogo opcional que permite al usuario vincular una contraseña
+     * a su cuenta de Google mediante Firebase Auth (linkWithCredential).
+     * Esto le permitirá iniciar sesión también con email y contraseña en el futuro.
+     * El usuario puede omitir este paso e ir directamente a Home.
+     *
+     * @param user Usuario de Firebase al que se vinculará la contraseña
+     */
     private void mostrarDialogoPassword(FirebaseUser user) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Establecer contraseña");
@@ -177,6 +232,9 @@ public class RegisterActivity extends AppCompatActivity {
         builder.setNegativeButton("Omitir", (dialog, which) -> irAHome());
 
         AlertDialog dialog = builder.create();
+
+        // Se sobreescribe el listener del botón positivo para poder validar
+        // los campos sin que el diálogo se cierre automáticamente al pulsarlo
         dialog.setOnShowListener(d -> {
             dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
                 String pass = etPass.getText().toString().trim();
@@ -199,6 +257,7 @@ public class RegisterActivity extends AppCompatActivity {
                     return;
                 }
 
+                // Vincula las credenciales de email/password a la cuenta de Google existente
                 AuthCredential emailCredential = EmailAuthProvider.getCredential(user.getEmail(), pass);
                 user.linkWithCredential(emailCredential)
                         .addOnSuccessListener(a -> {
@@ -215,6 +274,10 @@ public class RegisterActivity extends AppCompatActivity {
         dialog.show();
     }
 
+    /**
+     * Navega a HomeActivity y elimina RegisterActivity de la pila
+     * para que el usuario no pueda volver atrás con el botón de retroceso.
+     */
     private void irAHome() {
         startActivity(new Intent(RegisterActivity.this, HomeActivity.class));
         finish();

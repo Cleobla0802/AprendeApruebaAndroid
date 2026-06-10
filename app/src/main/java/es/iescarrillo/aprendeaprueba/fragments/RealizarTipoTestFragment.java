@@ -43,6 +43,10 @@ public class RealizarTipoTestFragment extends Fragment {
 
     public RealizarTipoTestFragment() {}
 
+    /**
+     * Inicializa la vista del fragmento: enlaza los componentes del layout,
+     * carga el test recibido por argumentos y configura los listeners de los botones y opciones.
+     */
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_realizar_tipo_test, container, false);
@@ -105,6 +109,11 @@ public class RealizarTipoTestFragment extends Fragment {
         return view;
     }
 
+    /**
+     * Avanza a la siguiente pregunta si hay una opción seleccionada.
+     * Si es la última pregunta, intenta finalizar el test.
+     * Si no hay opción elegida, muestra un aviso al usuario.
+     */
     private void continuar() {
         if (opcionSeleccionada == -1) {
             Toast.makeText(getContext(), "Elige una respuesta o pulsa Omitir.", Toast.LENGTH_SHORT).show();
@@ -119,17 +128,32 @@ public class RealizarTipoTestFragment extends Fragment {
         }
     }
 
+    /**
+     * Registra la opción elegida por el usuario para la pregunta actual
+     * y actualiza el estado visual de las tarjetas.
+     *
+     * @param index Índice de la opción seleccionada (0=A, 1=B, 2=C, 3=D)
+     */
     private void seleccionarOpcion(int index) {
         opcionSeleccionada = index;
         respuestas[preguntaActual] = index;
         actualizarEstadoVisual();
     }
 
+    /**
+     * Navega directamente a la pregunta indicada por su índice.
+     *
+     * @param index Índice de la pregunta a mostrar
+     */
     private void irAPregunta(int index) {
         preguntaActual = index;
         mostrarPregunta();
     }
 
+    /**
+     * Actualiza el color de las tarjetas de opciones según la selección actual,
+     * el contador de preguntas respondidas, la barra de progreso y la visibilidad de botones.
+     */
     private void actualizarEstadoVisual() {
         MaterialCardView[] cards = {cardA, cardB, cardC, cardD};
         for (int i = 0; i < cards.length; i++) {
@@ -147,6 +171,10 @@ public class RealizarTipoTestFragment extends Fragment {
         btnSiguiente.setText(preguntaActual == preguntas.size() - 1 ? "Terminar" : "Continuar");
     }
 
+    /**
+     * Carga los datos de la pregunta actual en los componentes de la vista:
+     * enunciado, opciones de respuesta y estado de selección previo si existe.
+     */
     private void mostrarPregunta() {
         Pregunta p = preguntas.get(preguntaActual);
         tvEnunciado.setText(p.getEnunciado());
@@ -161,6 +189,12 @@ public class RealizarTipoTestFragment extends Fragment {
         actualizarEstadoVisual();
     }
 
+    /**
+     * Recorre el array de respuestas y devuelve el índice de la primera pregunta
+     * que aún no ha sido respondida. Devuelve -1 si todas están respondidas.
+     *
+     * @return Índice de la primera pregunta sin responder, o -1 si no hay ninguna
+     */
     private int buscarPrimeroSinResponder() {
         for (int i = 0; i < respuestas.length; i++) {
             if (respuestas[i] == -1) return i;
@@ -168,18 +202,33 @@ public class RealizarTipoTestFragment extends Fragment {
         return -1;
     }
 
+    /**
+     * Cuenta cuántas preguntas han sido respondidas (valor distinto de -1).
+     *
+     * @return Número de preguntas respondidas
+     */
     private int contarRespondidas() {
         int count = 0;
         for (int r : respuestas) if (r != -1) count++;
         return count;
     }
 
+    /**
+     * Cuenta cuántas preguntas quedan sin responder (valor igual a -1).
+     *
+     * @return Número de preguntas sin responder
+     */
     private int contarSinResponder() {
         int count = 0;
         for (int r : respuestas) if (r == -1) count++;
         return count;
     }
 
+    /**
+     * Comprueba si quedan preguntas sin responder antes de finalizar.
+     * Si las hay, muestra un diálogo ofreciendo revisarlas o terminar igualmente.
+     * Si todas están respondidas, pide confirmación para guardar la nota.
+     */
     private void intentarFinalizar() {
         int sinResponder = contarSinResponder();
         if (sinResponder > 0) {
@@ -206,6 +255,10 @@ public class RealizarTipoTestFragment extends Fragment {
                 .show();
     }
 
+    /**
+     * Muestra un diálogo de confirmación al pulsar Cancelar.
+     * Si no se ha respondido ninguna pregunta, sale directamente sin preguntar.
+     */
     private void confirmarSalida() {
         if (contarRespondidas() == 0) {
             getParentFragmentManager().popBackStack();
@@ -220,6 +273,10 @@ public class RealizarTipoTestFragment extends Fragment {
                 .show();
     }
 
+    /**
+     * Calcula el resultado del test comparando las respuestas del usuario con las correctas,
+     * y guarda la nota en Firebase. Al terminar, muestra el resultado y vuelve a la pantalla anterior.
+     */
     private void finalizarTest() {
         int aciertos = 0;
         for (int i = 0; i < preguntas.size(); i++) {

@@ -41,6 +41,10 @@ public class PruebasFragment extends Fragment {
     private Query testsQuery;
     private ValueEventListener testsListener;
 
+    /**
+     * Infla el layout del fragmento, inicializa el RecyclerView con su adaptador,
+     * configura el buscador, los chips de categoría y el botón para crear un nuevo test.
+     */
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_tipo_test, container, false);
@@ -124,6 +128,11 @@ public class PruebasFragment extends Fragment {
         return view;
     }
 
+    /**
+     * Regenera los chips de categoría a partir de los tests cargados.
+     * Conserva siempre el chip "Todos" en primera posición y evita duplicados
+     * usando un LinkedHashSet para mantener el orden de inserción.
+     */
     private void actualizarChips() {
         if (!isAdded()) return;
         Set<String> categorias = new LinkedHashSet<>();
@@ -148,6 +157,10 @@ public class PruebasFragment extends Fragment {
             chipGroup.check(R.id.chipAll);
     }
 
+    /**
+     * Filtra la lista completa de tests según el texto del buscador
+     * y la categoría seleccionada, y actualiza el adaptador con el resultado.
+     */
     private void aplicarFiltros() {
         if (!isAdded()) return;
         List<Test> filtrada = new ArrayList<>();
@@ -160,6 +173,10 @@ public class PruebasFragment extends Fragment {
         adapter.updateList(filtrada);
     }
 
+    /**
+     * Registra un listener en tiempo real en Firebase que escucha los tests
+     * del usuario actual y actualiza la lista, los chips y los filtros ante cualquier cambio.
+     */
     private void cargarDatosFirebase() {
         String uid = FirebaseAuth.getInstance().getUid();
         if (uid == null) return;
@@ -185,6 +202,10 @@ public class PruebasFragment extends Fragment {
         testsQuery.addValueEventListener(testsListener);
     }
 
+    /**
+     * Al destruir la vista se elimina el listener de Firebase
+     * para evitar fugas de memoria y callbacks sobre vistas ya destruidas.
+     */
     @Override
     public void onDestroyView() {
         super.onDestroyView();

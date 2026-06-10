@@ -28,11 +28,19 @@ public class ResumenAdapter extends RecyclerView.Adapter<ResumenAdapter.ResumenV
         void onEliminarClick(Resumen resumen);
     }
 
+    /**
+     * Constructor del adaptador.
+     * @param listaResumenes Lista de resúmenes a mostrar en el RecyclerView.
+     * @param listener Callback para gestionar los clics de ver detalle y eliminar.
+     */
     public ResumenAdapter(List<Resumen> listaResumenes, OnResumenClickListener listener) {
         this.listaResumenes = listaResumenes;
         this.listener = listener;
     }
 
+    /**
+     * Infla el layout de cada tarjeta de resumen y crea su ViewHolder.
+     */
     @NonNull
     @Override
     public ResumenViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -40,6 +48,11 @@ public class ResumenAdapter extends RecyclerView.Adapter<ResumenAdapter.ResumenV
         return new ResumenViewHolder(v);
     }
 
+    /**
+     * Rellena los datos de un resumen en su tarjeta correspondiente.
+     * Si el resumen está siendo generado, muestra la tarjeta semitransparente
+     * y bloquea la navegación al detalle hasta que termine.
+     */
     @Override
     public void onBindViewHolder(@NonNull ResumenViewHolder holder, int position) {
         Resumen resumen = listaResumenes.get(position);
@@ -68,16 +81,26 @@ public class ResumenAdapter extends RecyclerView.Adapter<ResumenAdapter.ResumenV
         });
     }
 
+    /**
+     * Devuelve el número total de resúmenes en la lista.
+     */
     @Override
     public int getItemCount() {
         return listaResumenes.size();
     }
 
+    /**
+     * Reemplaza la lista actual por una nueva y refresca el RecyclerView.
+     * @param newList Nueva lista de resúmenes a mostrar.
+     */
     public void updateList(List<Resumen> newList) {
         this.listaResumenes = newList;
         notifyDataSetChanged();
     }
 
+    /**
+     * ViewHolder que mantiene las referencias a las vistas de cada tarjeta de resumen.
+     */
     public static class ResumenViewHolder extends RecyclerView.ViewHolder {
         TextView tvTitulo, tvDescripcion, tvFecha, tvCategoria;
         ImageButton btnEliminar;

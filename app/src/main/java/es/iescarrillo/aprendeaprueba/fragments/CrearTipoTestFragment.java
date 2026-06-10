@@ -59,6 +59,10 @@ public class CrearTipoTestFragment extends Fragment {
 
     public CrearTipoTestFragment() {}
 
+    /**
+     * Infla el layout, inicializa las vistas, configura los spinners de fuente y cantidad
+     * de preguntas, y asigna los listeners del RadioGroup y los botones.
+     */
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_crear_tipo_test, container, false);
@@ -94,6 +98,9 @@ public class CrearTipoTestFragment extends Fragment {
         return view;
     }
 
+    /**
+     * Carga una sola vez los apuntes del usuario desde Firebase y actualiza el spinner de fuente.
+     */
     private void cargarApuntes() {
         if (mAuth.getCurrentUser() == null) return;
         String uid = mAuth.getCurrentUser().getUid();
@@ -122,6 +129,9 @@ public class CrearTipoTestFragment extends Fragment {
                 });
     }
 
+    /**
+     * Carga una sola vez los resúmenes del usuario desde Firebase y actualiza el spinner de fuente.
+     */
     private void cargarResumenes() {
         if (mAuth.getCurrentUser() == null) return;
         String uid = mAuth.getCurrentUser().getUid();
@@ -150,6 +160,12 @@ public class CrearTipoTestFragment extends Fragment {
                 });
     }
 
+    /**
+     * Recoge el material seleccionado (apunte o resumen), valida que tenga contenido suficiente
+     * y no esté en generación, crea el nodo del test en Firebase con estado "generando",
+     * y lanza en paralelo la llamada al backend de IA para obtener las preguntas.
+     * Cuando la IA responde, actualiza el test con las preguntas o lo marca como error.
+     */
     private void generarTest() {
         if (titulosSpinner.isEmpty()) {
             Toast.makeText(getContext(), "No hay elementos disponibles", Toast.LENGTH_SHORT).show();
@@ -215,18 +231,18 @@ public class CrearTipoTestFragment extends Fragment {
         testInicial.put("fecha", System.currentTimeMillis());
 
         testsRef.child(nuevoId).setValue(testInicial)
-            .addOnSuccessListener(a -> {
-                btnGenerar.setEnabled(false);
-                if (getContext() != null)
-                    Toast.makeText(getContext(), "Test creado. Las preguntas se estan generando en segundo plano...", Toast.LENGTH_SHORT).show();
-                new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                    if (isAdded()) getParentFragmentManager().popBackStack();
-                }, 700);
-            })
-            .addOnFailureListener(e -> {
-                if (getContext() != null)
-                    Toast.makeText(getContext(), "Error al crear el test", Toast.LENGTH_SHORT).show();
-            });
+                .addOnSuccessListener(a -> {
+                    btnGenerar.setEnabled(false);
+                    if (getContext() != null)
+                        Toast.makeText(getContext(), "Test creado. Las preguntas se estan generando en segundo plano...", Toast.LENGTH_SHORT).show();
+                    new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                        if (isAdded()) getParentFragmentManager().popBackStack();
+                    }, 700);
+                })
+                .addOnFailureListener(e -> {
+                    if (getContext() != null)
+                        Toast.makeText(getContext(), "Error al crear el test", Toast.LENGTH_SHORT).show();
+                });
 
         Map<String, Object> body = new HashMap<>();
         body.put("contenido", contenidoProcesado);
@@ -274,6 +290,13 @@ public class CrearTipoTestFragment extends Fragment {
         });
     }
 
+    /**
+     * Actualiza los campos del test en Firebase solo si el nodo sigue existiendo.
+     * La comprobación previa evita escribir sobre un test que el usuario haya borrado mientras se generaba.
+     * @param testsRef Referencia al nodo "tests" en Firebase.
+     * @param testId   ID del test a actualizar.
+     * @param updates  Mapa con los campos y valores a actualizar.
+     */
     private void actualizarTestSiExiste(DatabaseReference testsRef, String testId, Map<String, Object> updates) {
         testsRef.child(testId).get().addOnSuccessListener(snapshot -> {
             if (snapshot.exists()) {

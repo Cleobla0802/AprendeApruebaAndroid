@@ -44,6 +44,10 @@ public class ApuntesFragment extends Fragment {
     private Query apuntesQuery;
     private ValueEventListener apuntesListener;
 
+    /**
+     * Infla el layout del fragmento, inicializa el RecyclerView, el buscador,
+     * los chips de categoría y el botón para crear un nuevo apunte.
+     */
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_apuntes, container, false);
@@ -86,6 +90,12 @@ public class ApuntesFragment extends Fragment {
         return view;
     }
 
+    /**
+     * Muestra un diálogo de confirmación antes de borrar un apunte.
+     * Si el usuario acepta, elimina el nodo correspondiente en Firebase.
+     * Incluye guardas para evitar crashes si el fragmento ya no está activo.
+     * @param apunte Apunte que se quiere eliminar.
+     */
     private void confirmarBorrado(Apuntes apunte) {
         if (!isAdded() || getContext() == null || apunte == null) return;
 
@@ -115,6 +125,11 @@ public class ApuntesFragment extends Fragment {
                 .show();
     }
 
+    /**
+     * Regenera los chips de categoría a partir de los apuntes cargados.
+     * Conserva siempre el chip "Todos" en primera posición y evita duplicados
+     * usando un LinkedHashSet para mantener el orden de inserción.
+     */
     private void actualizarChips() {
         if (!isAdded() || getContext() == null || chipGroup == null) return;
 
@@ -144,6 +159,10 @@ public class ApuntesFragment extends Fragment {
         }
     }
 
+    /**
+     * Filtra la lista completa de apuntes según el texto del buscador
+     * y la categoría seleccionada, y actualiza el adaptador con el resultado.
+     */
     private void aplicarFiltros() {
         if (adapter == null) return;
         List<Apuntes> listaFiltrada = new ArrayList<>();
@@ -156,6 +175,10 @@ public class ApuntesFragment extends Fragment {
         adapter.updateList(listaFiltrada);
     }
 
+    /**
+     * Registra un listener en tiempo real en Firebase que escucha los apuntes
+     * del usuario actual y actualiza la lista, los chips y los filtros ante cualquier cambio.
+     */
     private void cargarDatosFirebase() {
         String uid = FirebaseAuth.getInstance().getUid();
         if (uid == null) return;
@@ -187,6 +210,10 @@ public class ApuntesFragment extends Fragment {
         apuntesQuery.addValueEventListener(apuntesListener);
     }
 
+    /**
+     * Al destruir la vista se elimina el listener de Firebase
+     * para evitar fugas de memoria y callbacks sobre vistas ya destruidas.
+     */
     @Override
     public void onDestroyView() {
         super.onDestroyView();

@@ -32,12 +32,21 @@ public class ApuntesAdapter extends RecyclerView.Adapter<ApuntesAdapter.ViewHold
         void onDelete(Apuntes apunte, int position);
     }
 
+    /**
+     * Constructor del adaptador.
+     * @param context Contexto de la actividad o fragmento que lo instancia.
+     * @param listaApuntes Lista de apuntes a mostrar en el RecyclerView.
+     * @param deleteListener Callback que se ejecuta al pulsar el botón de borrar.
+     */
     public ApuntesAdapter(Context context, List<Apuntes> listaApuntes, OnDeleteClickListener deleteListener) {
         this.context = context;
         this.listaApuntes = listaApuntes;
         this.deleteListener = deleteListener;
     }
 
+    /**
+     * Infla el layout de cada tarjeta de apunte y crea su ViewHolder.
+     */
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -45,6 +54,11 @@ public class ApuntesAdapter extends RecyclerView.Adapter<ApuntesAdapter.ViewHold
         return new ViewHolder(view);
     }
 
+    /**
+     * Rellena los datos de un apunte en su tarjeta correspondiente.
+     * Si el apunte está siendo generado, muestra la tarjeta semitransparente
+     * y bloquea la navegación al detalle hasta que termine.
+     */
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Apuntes apunte = listaApuntes.get(position);
@@ -88,16 +102,26 @@ public class ApuntesAdapter extends RecyclerView.Adapter<ApuntesAdapter.ViewHold
         });
     }
 
+    /**
+     * Devuelve el número total de apuntes en la lista.
+     */
     @Override
     public int getItemCount() {
         return listaApuntes.size();
     }
 
+    /**
+     * Reemplaza la lista actual por una nueva y refresca el RecyclerView.
+     * @param newList Nueva lista de apuntes a mostrar.
+     */
     public void updateList(List<Apuntes> newList) {
         this.listaApuntes = newList;
         notifyDataSetChanged();
     }
 
+    /**
+     * ViewHolder que mantiene las referencias a las vistas de cada tarjeta de apunte.
+     */
     public static class ViewHolder extends RecyclerView.ViewHolder {
         TextView tvTitulo, tvDescripcion, tvCategoriaTag;
         MaterialCardView cardApunte;

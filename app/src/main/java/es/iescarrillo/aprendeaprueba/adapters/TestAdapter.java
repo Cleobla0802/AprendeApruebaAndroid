@@ -28,11 +28,19 @@ public class TestAdapter extends RecyclerView.Adapter<TestAdapter.TestViewHolder
         void onEliminarClick(Test test);
     }
 
+    /**
+     * Constructor del adaptador.
+     * @param listaTests Lista de tests a mostrar en el RecyclerView.
+     * @param listener Callback para gestionar los clics de realizar y eliminar.
+     */
     public TestAdapter(List<Test> listaTests, OnTestClickListener listener) {
         this.listaTests = listaTests;
         this.listener = listener;
     }
 
+    /**
+     * Infla el layout de cada tarjeta de test y crea su ViewHolder.
+     */
     @NonNull
     @Override
     public TestViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -40,6 +48,12 @@ public class TestAdapter extends RecyclerView.Adapter<TestAdapter.TestViewHolder
         return new TestViewHolder(view);
     }
 
+    /**
+     * Rellena los datos de un test en su tarjeta correspondiente.
+     * Gestiona tres estados posibles: generando, error, y completado/pendiente.
+     * Si está completado, muestra la última nota con un color según el resultado
+     * (verde ≥75%, naranja ≥50%, rojo por debajo de 50%).
+     */
     @Override
     public void onBindViewHolder(@NonNull TestViewHolder holder, int position) {
         Test test = listaTests.get(position);
@@ -102,16 +116,26 @@ public class TestAdapter extends RecyclerView.Adapter<TestAdapter.TestViewHolder
         });
     }
 
+    /**
+     * Devuelve el número total de tests en la lista.
+     */
     @Override
     public int getItemCount() {
         return listaTests.size();
     }
 
+    /**
+     * Reemplaza la lista actual por una nueva y refresca el RecyclerView.
+     * @param newList Nueva lista de tests a mostrar.
+     */
     public void updateList(List<Test> newList) {
         this.listaTests = newList;
         notifyDataSetChanged();
     }
 
+    /**
+     * ViewHolder que mantiene las referencias a las vistas de cada tarjeta de test.
+     */
     public static class TestViewHolder extends RecyclerView.ViewHolder {
         TextView tvTitulo, tvDescripcion, tvCategoria, tvNota;
         ImageButton btnBorrar;

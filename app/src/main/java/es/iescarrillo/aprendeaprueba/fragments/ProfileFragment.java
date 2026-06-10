@@ -65,6 +65,10 @@ public class ProfileFragment extends Fragment {
 
     public ProfileFragment() {}
 
+    /**
+     * Registra el launcher del flujo de Google Sign-In antes de que se cree la vista.
+     * Si la reautenticación con Google tiene éxito, lanza el borrado de cuenta.
+     */
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -90,6 +94,10 @@ public class ProfileFragment extends Fragment {
         );
     }
 
+    /**
+     * Infla el layout, inicializa las vistas, configura Google Sign-In
+     * y asigna los listeners de todos los botones del perfil.
+     */
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_profile, container, false);
@@ -134,6 +142,10 @@ public class ProfileFragment extends Fragment {
         return view;
     }
 
+    /**
+     * Comprueba si el usuario inició sesión con Google revisando sus proveedores de autenticación.
+     * @return true si "google.com" está entre los proveedores del usuario.
+     */
     private boolean esUsuarioGoogle() {
         if (user == null) return false;
         for (UserInfo provider : user.getProviderData()) {
@@ -142,6 +154,10 @@ public class ProfileFragment extends Fragment {
         return false;
     }
 
+    /**
+     * Carga el username del usuario desde Firebase y lo muestra en el campo de texto.
+     * Si no existe en la base de datos, usa el displayName de Firebase Auth como fallback.
+     */
     private void cargarUsername() {
         if (user == null) return;
         FirebaseDatabase.getInstance().getReference("usuarios").child(user.getUid()).child("username")
@@ -161,6 +177,10 @@ public class ProfileFragment extends Fragment {
                 });
     }
 
+    /**
+     * Guarda el nuevo username en Firebase si ha cambiado respecto al actual.
+     * Deshabilita el botón mientras dura la operación para evitar envíos duplicados.
+     */
     private void guardarUsername() {
         String nuevo = etUsername.getText().toString().trim();
         if (nuevo.isEmpty() || nuevo.equals(usernameActual) || user == null) return;
@@ -184,6 +204,9 @@ public class ProfileFragment extends Fragment {
                 });
     }
 
+    /**
+     * Envía un correo de restablecimiento de contraseña al email del usuario autenticado.
+     */
     private void enviarCorreoRestablecimiento() {
         if (user == null || user.getEmail() == null) return;
         auth.sendPasswordResetEmail(user.getEmail())
@@ -191,18 +214,30 @@ public class ProfileFragment extends Fragment {
                 .addOnFailureListener(e -> mostrarError("Error al enviar el correo"));
     }
 
+    /**
+     * Muestra un mensaje de éxito y oculta el de error.
+     * @param msg Texto a mostrar en el mensaje de éxito.
+     */
     private void mostrarExito(String msg) {
         tvMensajeExito.setText(msg);
         tvMensajeExito.setVisibility(View.VISIBLE);
         tvMensajeError.setVisibility(View.GONE);
     }
 
+    /**
+     * Muestra un mensaje de error y oculta el de éxito.
+     * @param msg Texto a mostrar en el mensaje de error.
+     */
     private void mostrarError(String msg) {
         tvMensajeError.setText(msg);
         tvMensajeError.setVisibility(View.VISIBLE);
         tvMensajeExito.setVisibility(View.GONE);
     }
 
+    /**
+     * Muestra el modal de confirmación de eliminación de cuenta.
+     * Si el usuario es de Google, oculta el campo de contraseña y muestra un aviso informativo.
+     */
     private void mostrarModalEliminar() {
         overlayBg.setVisibility(View.VISIBLE);
         cardDeleteModal.setVisibility(View.VISIBLE);
@@ -217,11 +252,19 @@ public class ProfileFragment extends Fragment {
         }
     }
 
+    /**
+     * Cierra el modal de confirmación de eliminación de cuenta.
+     */
     private void cerrarModalEliminar() {
         overlayBg.setVisibility(View.GONE);
         cardDeleteModal.setVisibility(View.GONE);
     }
 
+    /**
+     * Inicia el proceso de eliminación de cuenta según el proveedor del usuario.
+     * Para Google lanza el flujo de reautenticación; para email/contraseña valida
+     * la contraseña introducida antes de proceder.
+     */
     private void confirmarEliminar() {
         if (user == null) return;
 
@@ -246,6 +289,11 @@ public class ProfileFragment extends Fragment {
         }
     }
 
+    /**
+     * Reautentica al usuario con el credential proporcionado y, si tiene éxito,
+     * lanza el borrado completo de todos sus datos y su cuenta de Firebase Auth.
+     * @param credential Credencial de reautenticación (Google o email/contraseña).
+     */
     private void reauthenticarYEliminar(AuthCredential credential) {
         user.reauthenticate(credential)
                 .addOnSuccessListener(a -> borrarCuentaCompleta())
@@ -263,6 +311,11 @@ public class ProfileFragment extends Fragment {
                 });
     }
 
+    /**
+     * Borra en paralelo todos los apuntes, resúmenes y tests del usuario en Firebase.
+     * Cuando los tres nodos han terminado de borrarse, elimina la cuenta de Firebase Auth
+     * y redirige a la pantalla de inicio.
+     */
     private void borrarCuentaCompleta() {
         if (user == null) return;
         String uid = user.getUid();
@@ -293,6 +346,15 @@ public class ProfileFragment extends Fragment {
         borrarDatosUsuario("tests", uid, pendientes, onAllDone);
     }
 
+    /**
+     * Elimina todos los documentos de un nodo de Firebase que pertenecen al usuario.
+     * Cuando todos los documentos del nodo han sido borrados, decrementa el contador
+     * de operaciones pendientes y ejecuta el callback si ya no queda ninguna.
+     * @param nodo      Nombre del nodo en Firebase ("apuntes", "resumenes" o "tests").
+     * @param uid       UID del usuario cuyos datos se van a borrar.
+     * @param pendientes Array de un elemento que actúa como contador compartido entre llamadas.
+     * @param onAllDone Runnable que se ejecuta cuando los tres nodos han terminado.
+     */
     private void borrarDatosUsuario(String nodo, String uid, int[] pendientes, Runnable onAllDone) {
         DatabaseReference ref = FirebaseDatabase.getInstance().getReference(nodo);
         ref.orderByChild("userId").equalTo(uid).addListenerForSingleValueEvent(new ValueEventListener() {
@@ -320,6 +382,9 @@ public class ProfileFragment extends Fragment {
         });
     }
 
+    /**
+     * Habilita o deshabilita los botones del modal de eliminación según el estado de carga.
+     */
     private void actualizarEstadoDelete() {
         btnConfirmarDelete.setEnabled(!loadingDelete);
         btnCancelarDelete.setEnabled(!loadingDelete);

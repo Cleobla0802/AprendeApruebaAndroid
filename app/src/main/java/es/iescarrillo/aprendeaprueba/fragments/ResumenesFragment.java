@@ -47,6 +47,12 @@ public class ResumenesFragment extends Fragment {
 
     public ResumenesFragment() {}
 
+    /**
+     * Inicializa la vista del fragmento: enlaza los componentes del layout,
+     * configura el RecyclerView con su adaptador, el buscador de texto,
+     * el filtro por categorías y el botón para crear un nuevo resumen.
+     * Al final lanza la carga de datos desde Firebase.
+     */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_resumenes, container, false);
@@ -102,6 +108,11 @@ public class ResumenesFragment extends Fragment {
         return view;
     }
 
+    /**
+     * Recorre la lista de resúmenes cargados y genera dinámicamente un chip
+     * por cada categoría única. Mantiene siempre el chip "Todos" como primer elemento.
+     * Si ningún chip está seleccionado, selecciona "Todos" por defecto.
+     */
     private void actualizarChips() {
         if (!isAdded() || getContext() == null) return;
         Set<String> categorias = new LinkedHashSet<>();
@@ -127,6 +138,10 @@ public class ResumenesFragment extends Fragment {
             chipGroup.check(R.id.chipAll);
     }
 
+    /**
+     * Filtra la lista de resúmenes según el texto introducido en el buscador
+     * y la categoría seleccionada en los chips. Actualiza el adaptador con el resultado.
+     */
     private void aplicarFiltros() {
         if (!isAdded() || getContext() == null) return;
         List<Resumen> filtrada = new ArrayList<>();
@@ -139,6 +154,11 @@ public class ResumenesFragment extends Fragment {
         adapter.updateList(filtrada);
     }
 
+    /**
+     * Registra un listener en tiempo real sobre Firebase que carga todos los resúmenes
+     * del usuario autenticado. Cada vez que hay cambios en la base de datos, reconstruye
+     * la lista, actualiza los chips de categoría y aplica los filtros activos.
+     */
     private void cargarResumenesDesdeFirebase() {
         if (mAuth.getCurrentUser() == null) return;
         String uid = mAuth.getCurrentUser().getUid();
@@ -169,6 +189,11 @@ public class ResumenesFragment extends Fragment {
                 actualizarChips();
                 aplicarFiltros();
             }
+
+            /**
+             * Se ejecuta si Firebase cancela la escucha por un error de permisos u otro problema.
+             * Muestra el mensaje de error al usuario.
+             */
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
                 if (!isAdded() || getContext() == null) return;
@@ -178,6 +203,12 @@ public class ResumenesFragment extends Fragment {
         resumenesQuery.addValueEventListener(resumenesListener);
     }
 
+    /**
+     * Muestra un diálogo de confirmación antes de eliminar un resumen,
+     * indicando el título del resumen afectado para evitar borrados accidentales.
+     *
+     * @param resumen El resumen que se quiere eliminar
+     */
     private void mostrarDialogoConfirmacion(Resumen resumen) {
         new AlertDialog.Builder(getContext())
                 .setTitle("Eliminar resumen")
@@ -187,6 +218,12 @@ public class ResumenesFragment extends Fragment {
                 .show();
     }
 
+    /**
+     * Elimina el resumen indicado de Firebase usando su ID como clave.
+     * Muestra un Toast según el resultado de la operación.
+     *
+     * @param resumen El resumen a eliminar
+     */
     private void eliminarResumen(Resumen resumen) {
         mDatabase.child(resumen.getId()).removeValue()
                 .addOnSuccessListener(a -> {
@@ -199,6 +236,11 @@ public class ResumenesFragment extends Fragment {
                 });
     }
 
+    /**
+     * Navega al fragmento de detalle pasando el resumen seleccionado como argumento serializado.
+     *
+     * @param resumen El resumen cuyo detalle se quiere visualizar
+     */
     private void abrirDetalleResumen(Resumen resumen) {
         Bundle bundle = new Bundle();
         bundle.putSerializable("resumen_objeto", resumen);
@@ -210,6 +252,10 @@ public class ResumenesFragment extends Fragment {
                 .commit();
     }
 
+    /**
+     * Limpia el listener de Firebase al destruir la vista para evitar
+     * fugas de memoria y callbacks sobre un fragmento ya desvinculado.
+     */
     @Override
     public void onDestroyView() {
         super.onDestroyView();

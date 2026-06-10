@@ -12,6 +12,10 @@ import com.google.firebase.auth.FirebaseAuth;
 
 import es.iescarrillo.aprendeaprueba.R;
 
+/**
+ * Pantalla para recuperar la contraseña mediante correo electrónico.
+ * Usa Firebase Auth para enviar un email de restablecimiento al usuario.
+ */
 public class RecuperarPasswordActivity extends AppCompatActivity {
 
     private EditText etEmail;
@@ -19,6 +23,10 @@ public class RecuperarPasswordActivity extends AppCompatActivity {
     private TextView tvVolver;
     private FirebaseAuth mAuth;
 
+    /**
+     * Inicializa la pantalla: enlaza los componentes del layout y configura
+     * el botón de recuperación y el enlace para volver al login.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -30,9 +38,17 @@ public class RecuperarPasswordActivity extends AppCompatActivity {
         tvVolver = findViewById(R.id.tvVolverLogin);
 
         btnRecuperar.setOnClickListener(v -> recuperarPassword());
+
+        // finish() cierra esta pantalla y vuelve al Login sin necesidad de otra Activity
         tvVolver.setOnClickListener(v -> finish());
     }
 
+    /**
+     * Valida el email introducido y solicita a Firebase el envío
+     * de un correo de restablecimiento de contraseña.
+     * Si el correo no está registrado, Firebase devuelve un error y se informa al usuario.
+     * Si el envío es exitoso, cierra la pantalla automáticamente.
+     */
     private void recuperarPassword() {
         String email = etEmail.getText().toString().trim();
 
