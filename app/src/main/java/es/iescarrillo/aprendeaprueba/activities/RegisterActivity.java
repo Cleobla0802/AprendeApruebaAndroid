@@ -58,7 +58,7 @@ public class RegisterActivity extends AppCompatActivity {
 
         btnRegister.setOnClickListener(v -> registerWithEmail());
         btnGoogle.setOnClickListener(v -> loginWithGoogle());
-        tvLogin.setOnClickListener(v -> finish()); // Vuelve al login
+        tvLogin.setOnClickListener(v -> finish());
     }
 
     private void registerWithEmail() {
@@ -113,7 +113,6 @@ public class RegisterActivity extends AppCompatActivity {
     }
 
     private void handleSignIn(Credential credential) {
-        // Aprovechamos Java 21 para usar el 'instanceof' moderno
         if (credential instanceof CustomCredential customCredential
                 && credential.getType().equals(GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL)) {
             try {

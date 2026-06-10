@@ -31,7 +31,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/tvUserName" />
 
-    <!-- Tarjeta Apuntes -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/cardApuntes"
         android:layout_width="0dp"
@@ -67,7 +66,6 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <!-- Tarjeta Resúmenes -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/cardResumenes"
         android:layout_width="0dp"
@@ -104,7 +102,6 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <!-- Tarjeta Pruebas -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/cardPruebas"
         android:layout_width="0dp"

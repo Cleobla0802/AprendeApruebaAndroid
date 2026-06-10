@@ -34,10 +34,8 @@ public class MainActivity extends AppCompatActivity {
 
         imgLogo = findViewById(R.id.logo);
 
-        // URL directa del logo
         String logoUrl = "https://drive.google.com/uc?export=download&id=1QrX-2GAmryhv7rsPTvrM1-e430BlajrT";
 
-        // Cargar con Picasso
         Picasso.get()
                 .load(logoUrl)
                 .into(imgLogo);

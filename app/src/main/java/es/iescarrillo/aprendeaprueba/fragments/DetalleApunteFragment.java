@@ -49,7 +49,6 @@ public class DetalleApunteFragment extends Fragment {
         fabGuardar = view.findViewById(R.id.fabGuardar);
         pbCargando = view.findViewById(R.id.pbCargando);
 
-        // 3. Configurar el adaptador (usando un layout estándar para evitar fondos negros)
         String[] categorias = {"Matemáticas", "Historia", "Ciencias", "Ingles", "Tecnologia"};
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(requireContext(), R.layout.item_dropdown_blanco, categorias) {
             @NonNull
@@ -57,7 +56,7 @@ public class DetalleApunteFragment extends Fragment {
             public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
                 View view = super.getView(position, convertView, parent);
                 TextView text = (TextView) view.findViewById(android.R.id.text1);
-                text.setTextColor(Color.WHITE); // Forzamos blanco por código
+                text.setTextColor(Color.WHITE);
                 return view;
             }
 
@@ -65,21 +64,19 @@ public class DetalleApunteFragment extends Fragment {
             public View getDropDownView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
                 View view = super.getDropDownView(position, convertView, parent);
                 TextView text = (TextView) view.findViewById(android.R.id.text1);
-                text.setTextColor(Color.WHITE); // Forzamos blanco en la lista desplegable
-                text.setBackgroundColor(Color.parseColor("#2B2B2B")); // Fondo oscuro
+                text.setTextColor(Color.WHITE);
+                text.setBackgroundColor(Color.parseColor("#2B2B2B"));
                 return view;
             }
         };
 
         spinnerCategoria.setAdapter(adapter);
 
-        // 4. Recuperar datos del Bundle
         if (getArguments() != null) {
             apunteId = getArguments().getString("id");
             etTitulo.setText(getArguments().getString("titulo"));
             etDescripcion.setText(getArguments().getString("descripcion"));
             etContenido.setText(getArguments().getString("contenido"));
-            // Importante el 'false' para que no filtre la lista al poner el texto inicial
             spinnerCategoria.setText(getArguments().getString("categoria"), false);
         }
 
@@ -87,7 +84,6 @@ public class DetalleApunteFragment extends Fragment {
     }
 
     private void actualizarApunte() {
-        // Obtenemos los valores actuales de las vistas
         String nuevoTitulo = etTitulo.getText().toString().trim();
         String nuevaDescripcion = etDescripcion.getText().toString().trim();
         String nuevoContenido = etContenido.getText().toString().trim();

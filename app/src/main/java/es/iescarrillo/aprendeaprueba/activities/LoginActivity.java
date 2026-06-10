@@ -153,17 +153,14 @@ public class LoginActivity extends AppCompatActivity {
         String uid = user.getUid();
         String email = user.getEmail();
 
-        // Buscamos en el nodo "persons" como en tu código original
         FirebaseDatabase.getInstance().getReference("usuarios")
                 .child(uid)
                 .addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
                         if (snapshot.exists()) {
-                            // Si el usuario ya está registrado en la DB, va al Main
                             irAMain();
                         } else {
-                            // Si es nuevo, lo mandamos a completar el registro
                             Intent intent = new Intent(LoginActivity.this, RegisterActivity.class);
                             intent.putExtra("userEmail", email);
                             intent.putExtra("uid", uid);
